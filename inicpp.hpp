@@ -1,20 +1,18 @@
 /*
-		creater		:	dujingning
-		date		:	2023
-		license		:	MIT
-		project		:	https://github.com/dujingning/inicpp.git or https://gitee.com/dujingning/inicpp
-		description	:	Easy to use and simple to implement, this header-only library allows for reading and writing of INI files, \
-					even with comments and cross-platform support with C++11.
-
+	creater		:	dujingning
+	date		:	2023
+	license		:	MIT
+	project		:	https://github.com/dujingning/inicpp.git or https://gitee.com/dujingning/inicpp
+	description	:	Easy to use and simple to implement, this header-only library allows for reading and writing of INI files, \
+				even with comments and cross-platform support with C++11.
 */
 
 #include <iostream>
 #include <algorithm>
 #include <fstream>
 #include <string>
-#include <map>
-
 #include <cstdio>
+#include <map>
 
 namespace inicpp
 {
