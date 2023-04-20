@@ -1,17 +1,19 @@
-### Remember
+### 一、Remember
 You can see the project at [https://github.com/dujingning/inicpp.git](https://github.com/dujingning/inicpp.git) or [https://gitee.com/dujingning/inicpp](https://github.com/dujingning/inicpp.git).
 
-### 项目说明(description)
-
-用于现代 C++ 的 INI 头文件库支持读写，甚至支持写注释。（The INI header-only library for Modern C++ supports reading and writing, even writing comments.）
 
 ---
 
-### 使用说明（usage）
+### 二、项目说明(description)
+
+用于现代 C++ 的 INI 头文件库支持读写，甚至支持写注释。（The INI header-only library for Modern C++ supports reading and writing, even writing comments.）
+
+
+### 三、使用说明（usage）
 
 simple to use with C++11 or latter
 
-* read example
+##### * 1.read example
 ```cpp
 #include "inicpp.cpp"
 
@@ -23,7 +25,7 @@ int main()
 }
 ```
 
-* write example
+##### * 2.write example
 ```cpp
 #include "inicpp.cpp"
 
@@ -35,8 +37,7 @@ int main()
     std::cout << _ini["rtsp"]["port"] << std::endl;
 }
 ```
-
-* or comment
+##### * 3.or comment
 ```cpp
 #include "inicpp.cpp"
 
@@ -48,8 +49,7 @@ int main()
     std::cout << _ini["rtsp"]["port"] << std::endl;
 }
 ```
-
-* For a full example, see example/main.cpp. You can compile it with `g++ -I../ -std=c++11 main.cpp -o iniExample` or any other method you prefer.
+##### * 4.For a full example, see example/main.cpp. You can compile it with `g++ -I../ -std=c++11 main.cpp -o iniExample` or any other method you prefer.
 
 ```cpp
 #include "inicpp.hpp"
@@ -92,7 +92,7 @@ int main()
 	return 0;
 }
 ```
-* let the example work 
+##### * let the example work 
 ```bash
 [root@jn inicpp]# cd example/
 [root@jn example]# g++ -I../ -std=c++11 main.cpp -o iniExample
@@ -112,9 +112,6 @@ port=8080
 [root@jn example]#
 ```
 
-You can create your own ini file or let the `inicpp::IniManager` generate a default one for you.
-
 ---
-
-### end:
+### 四、尾声（end）:
  The project was created by dujingning. And next way is add toString()/toInt()/toDouble().
