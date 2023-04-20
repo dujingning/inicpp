@@ -17,8 +17,8 @@ simple to use with C++11 or latter
 
 int main()
 {
-	// Load and parse the INI file.
-	inicpp::iniReader _ini("config.ini");
+    // Load and parse the INI file.
+    inicpp::iniReader _ini("config.ini");
     std::cout << _ini["rtsp"]["port"] << std::endl;
 }
 ```
@@ -29,8 +29,8 @@ int main()
 
 int main()
 {
-	// Load and parse the INI file.
-	inicpp::iniReader _ini("config.ini");
+    // Load and parse the INI file.
+    inicpp::iniReader _ini("config.ini");
     _ini.modify("rtsp","port","554");
     std::cout << _ini["rtsp"]["port"] << std::endl;
 }
@@ -42,8 +42,8 @@ int main()
 
 int main()
 {
-	// Load and parse the INI file.
-	inicpp::iniReader _ini("config.ini");
+    // Load and parse the INI file.
+    inicpp::iniReader _ini("config.ini");
     _ini.modify("rtsp","port","554","this is the listen port for rtsp server");
     std::cout << _ini["rtsp"]["port"] << std::endl;
 }
@@ -52,42 +52,44 @@ int main()
 * For a full example, see example/main.cpp. You can compile it with `g++ -I../ -std=c++11 main.cpp -o iniExample` or any other method you prefer.
 
 ```cpp
-#include "inicpp.cpp"
+#include "inicpp.hpp"
 
+/* compile: g++ -I../ -std=c++11 main.cpp -o iniExample */
 int main()
 {
 
-        // Load the INI file.
-        inicpp::IniManager _ini("config.ini");
+	// Load the INI file.
+	inicpp::IniManager _ini("config.ini");
 
-        // Check if the key exists.
-        if (!_ini["rtsp"].isKeyExist("port")) {
-                std::cout << "rtsp.port is not exist!" << std::endl;
-        }
+	// Check if the key exists.
+	if (!_ini["rtsp"].isKeyExist("port"))
+	{
+		std::cout << "rtsp.port is not exist!" << std::endl;
+	}
 
-        // Modify or add key-value pairs.
-        _ini.modify("rtsp","port","554");
+	// Modify or add key-value pairs.
+	_ini.modify("rtsp", "port", "554");
 
-        // Use key-value pairs directly.
-        std::string rtsp_port = _ini["rtsp"]["port"];
+	// Use key-value pairs directly.
+	std::string rtsp_port = _ini["rtsp"]["port"];
 
-        // You can write section-key-value.
-        _ini.modify("rtsp","port","554");
+	// You can write section-key-value.
+	_ini.modify("rtsp", "port", "554");
 
-        // Add a comment.
-        _ini.modify("rtsp","port","554", "this is the listen port for http server");
+	// Add a comment.
+	_ini.modify("rtsp", "port", "554", "this is the listen port for http server");
 
-        // Modify the comment.
-        _ini.modifyComment("rtsp","port", "this is the listen port for rtsp server ***");
+	// Modify the comment.
+	_ini.modifyComment("rtsp", "port", "this is the listen port for rtsp server ***");
 
-        // Try to modify or add more.
-        _ini.modify("http","port","8080","this is the listen port for http server");
+	// Try to modify or add more.
+	_ini.modify("http", "port", "8080", "this is the listen port for http server");
 
-        // You have obtained the key-value pair and saved it to your config file.
-        std::cout << "rtsp.port = " << _ini["rtsp"]["port"] << std::endl;
-        std::cout << "http.port = " << _ini["http"]["port"] << std::endl;
+	// You have obtained the key-value pair and saved it to your config file.
+	std::cout << "rtsp.port = " << _ini["rtsp"]["port"] << std::endl;
+	std::cout << "http.port = " << _ini["http"]["port"] << std::endl;
 
-        return 0;
+	return 0;
 }
 ```
 * let the example work 
