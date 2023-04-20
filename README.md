@@ -4,12 +4,12 @@ You can see the project at [https://github.com/dujingning/inicpp.git](https://gi
 
 ---
 
-### 二、项目说明(description)
+### 二、description
 
-用于现代 C++ 的 INI 头文件库支持读写，甚至支持写注释。（The INI header-only library for Modern C++ supports reading and writing, even writing comments.）
+The INI header-only library for Modern C++ supports reading and writing, even writing comments.（现代 C++ 的 INI 头文件库支持读写，支持写注释。）
 
 
-### 三、使用说明（usage）
+### 三、usage
 
 simple to use with C++11 or latter
 
