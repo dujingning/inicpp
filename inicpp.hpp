@@ -3,6 +3,7 @@
 	date		:	2023
 	license		:	MIT
 	project		:	https://github.com/dujingning/inicpp.git or https://gitee.com/dujingning/inicpp
+	contact		£º	Email to djn2019x@163.com
 	description	:	Easy to use and simple to implement, this header-only library allows for reading and writing of INI files, \
 				even with comments and cross-platform support with C++11.
 */
@@ -12,16 +13,32 @@
 #include <fstream>
 #include <string>
 #include <cstdio>
+#include <ctime>
 #include <map>
 
 namespace inicpp
 {
 
+#define CODE_INFO std::string(" | Code:\'file:") + std::string(__FILE__) + ",function:" + std::string(__FUNCTION__) + ",line:" + std::to_string(__LINE__) + '\''
+
 #ifdef INICPP_DEBUG
-#define INI_DEBUG(x) std::cout << x << std::endl
+#define INI_DEBUG(x) std::cout << "INICPP " << TimeFormatter::format() << " : " << x << CODE_INFO << std::endl
 #else
 #define INI_DEBUG(x)
 #endif
+
+	class TimeFormatter
+	{
+	public:
+		static std::string format(const std::string &format = "%Y-%m-%d %H:%M:%S")
+		{
+			std::time_t t = std::time(nullptr);
+			std::tm tm = *std::localtime(&t);
+			std::array<char, 100> buffer;
+			std::strftime(buffer.data(), buffer.size(), format.c_str(), &tm);
+			return buffer.data();
+		}
+	};
 
 	typedef struct KeyValueNode
 	{
@@ -122,6 +139,65 @@ namespace inicpp
 		bool isEmpty()
 		{
 			return _sectionMap.empty();
+		}
+
+		int toInt(const std::string &Key)
+		{
+			if (!_sectionMap.count(Key))
+			{
+				return 0;
+			}
+
+			int result = 0;
+
+			try
+			{
+				result = std::stoi(_sectionMap[Key].Value);
+			}
+			catch (const std::invalid_argument &e)
+			{
+				INI_DEBUG("Invalid argument: " << e.what() << ",input:\'" << _sectionMap[Key].Value << "\'");
+			}
+			catch (const std::out_of_range &e)
+			{
+				INI_DEBUG("Out of range: " << e.what() << ",input:\'" << _sectionMap[Key].Value << "\'");
+			}
+
+			return result;
+		}
+
+		std::string toString(const std::string &Key)
+		{
+			if (!_sectionMap.count(Key))
+			{
+				return "";
+			}
+			return _sectionMap[Key].Value;
+		}
+
+		double toDouble(const std::string &Key)
+		{
+			if (!_sectionMap.count(Key))
+			{
+				return 0.0;
+			}
+
+			double result = 0.0;
+
+			try
+			{
+				result = std::stoi(_sectionMap[Key].Value);
+			}
+			catch (const std::invalid_argument &e)
+			{
+				INI_DEBUG("Invalid argument: " << e.what() << ",input:\'" << _sectionMap[Key].Value << "\'");
+			}
+			catch (const std::out_of_range &e)
+			{
+				INI_DEBUG("Out of range: " << e.what() << ",input:\'" << _sectionMap[Key].Value << "\'");
+			}
+
+			return result;
 		}
 
 		// todo : add toString() / toInt() / toDouble()
@@ -283,7 +359,6 @@ namespace inicpp
 
 					sectionRecord.setValue(key, value, _SumOfLines);
 
-					INI_DEBUG(" -- key-path:\t" << sectionName << "." << key << "." << value);
 				}
 
 				++_SumOfLines;

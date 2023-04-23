@@ -32,8 +32,19 @@ int main()
 	_ini.modify("http", "port", "8080", "this is the listen port for http server");
 
 	// You have obtained the key-value pair and saved it to your config file.
-	std::cout << "rtsp.port = " << _ini["rtsp"]["port"] << std::endl;
-	std::cout << "http.port = " << _ini["http"]["port"] << std::endl;
+	std::cout << "to string:\trtsp.port = " << _ini["rtsp"]["port"] << std::endl;
+
+    // Convert to string, default is string
+    std::string http_port_s = _ini["http"].toString("port");
+	std::cout << "to string:\thttp.port = " << http_port_s << std::endl;
+
+    // Convert to double
+    double http_port_d = _ini["http"].toDouble("port");
+	std::cout << "to double:\thttp.port = " << http_port_d << std::endl;
+
+	// Convert to int
+    int http_port_i = _ini["http"].toInt("port");
+	std::cout << "to int:\t\thttp.port = " << http_port_i << std::endl;
 
 	return 0;
 }
