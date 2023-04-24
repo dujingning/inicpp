@@ -1,5 +1,5 @@
 ### 一、Project
-You can see the project at [https://github.com/dujingning/inicpp.git](https://github.com/dujingning/inicpp.git) or [https://gitee.com/dujingning/inicpp](https://github.com/dujingning/inicpp.git).
+You can see the project at [https://github.com/dujingning/inicpp.git](https://github.com/dujingning/inicpp.git) or [https://gitee.com/dujingning/inicpp](https://gitee.com/dujingning/inicpp).
 
 
 ---
@@ -78,6 +78,7 @@ int main()
 
 ```cpp
 #include "inicpp.hpp"
+#include <iomanip>
 
 /* compile: g++ -I../ -std=c++11 main.cpp -o iniExample */
 int main()
@@ -108,47 +109,53 @@ int main()
 	_ini.modifyComment("rtsp", "port", "this is the listen port for rtsp server ***");
 
 	// Try to modify or add more.
-	_ini.modify("http", "port", "8080", "this is the listen port for http server");
+	_ini.modify("math", "PI", "3.1415926", "This is pi in mathematics.");
 
 	// You have obtained the key-value pair and saved it to your config file.
 	std::cout << "to string:\trtsp.port = " << _ini["rtsp"]["port"] << std::endl;
 
 	// Convert to string, default is string
-	std::string http_port_s = _ini["http"].toString("port");
-	std::cout << "to string:\thttp.port = " << http_port_s << std::endl;
+	std::string http_port_s = _ini["math"].toString("PI");
+	std::cout << "to string:\tmath.PI   = " << http_port_s << std::endl;
 
 	// Convert to double
-	double http_port_d = _ini["http"].toDouble("port");
-	std::cout << "to double:\thttp.port = " << http_port_d << std::endl;
+	double http_port_d = _ini["math"].toDouble("PI");
+	std::cout << "to double:\tmath.PI   = " << std::setprecision(10) << http_port_d << std::endl;
 
 	// Convert to int
-	int http_port_i = _ini["http"].toInt("port");
-	std::cout << "to int:\t\thttp.port = " << http_port_i << std::endl;
+	int http_port_i = _ini["math"].toInt("PI");
+	std::cout << "to int:\t\tmath.PI   = " << http_port_i << std::endl;
 
 	return 0;
 }
 ```
 * let the example work 
 ```bash
+[root@jn inicpp]# ls
+example  inicpp.hpp  LICENSE  README.md
 [root@jn inicpp]# cd example/
-[root@jn example]# g++ -I../ -std=c++11 main.cpp -o iniExample -DINICPP_DEBUG
+[root@jn example]# grep -Rn g++
+main.cpp:4:/* compile: g++ -I../ -std=c++11 main.cpp -o iniExample */
+[root@jn example]# g++ -I../ -std=c++11 main.cpp -o iniExample
 [root@jn example]# ls
 iniExample  main.cpp
 [root@jn example]# ./iniExample
 rtsp.port is not exist!
 to string:      rtsp.port = 554
-to string:      http.port = 8080
-to double:      http.port = 8080
-to int:         http.port = 8080
+to string:      math.PI   = 3.1415926
+to double:      math.PI   = 3.1415926
+to int:         math.PI   = 3
+[root@jn example]# ls
+config.ini  iniExample  main.cpp
 [root@jn example]# cat config.ini
 [rtsp]
 ;this is the listen port for rtsp server ***
 port=554
 
 
-[http]
-;this is the listen port for http server
-port=8080
+[math]
+;This is pi in mathematics.
+PI=3.1415926
 [root@jn example]#
 ```
 
