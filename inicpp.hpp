@@ -3,7 +3,7 @@
 	date		:	2023
 	license		:	MIT
 	project		:	https://github.com/dujingning/inicpp.git or https://gitee.com/dujingning/inicpp
-	contact		£º	Email to djn2019x@163.com
+	contact		ï¿½ï¿½	Email to djn2019x@163.com
 	description	:	Easy to use and simple to implement, this header-only library allows for reading and writing of INI files, \
 				even with comments and cross-platform support with C++11.
 */
@@ -186,7 +186,7 @@ namespace inicpp
 
 			try
 			{
-				result = std::stoi(_sectionMap[Key].Value);
+				result = std::stod(_sectionMap[Key].Value);
 			}
 			catch (const std::invalid_argument &e)
 			{
