@@ -22,6 +22,9 @@
 * SOFTWARE.
 */
 
+#ifndef __JN_INICPP_H__
+#define __JN_INICPP_H__
+
 #include <iostream>
 #include <algorithm>
 #include <fstream>
@@ -566,3 +569,5 @@ namespace inicpp
 	};
 
 }
+
+#endif
