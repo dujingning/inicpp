@@ -33,6 +33,9 @@
 #include <ctime>
 #include <map>
 
+#include <codecvt>
+#include <locale>
+
 namespace inicpp
 {
 
@@ -190,6 +193,12 @@ namespace inicpp
 				return "";
 			}
 			return _sectionMap[Key].Value;
+		}
+
+                std::wstring toWString(const std::string &Key)
+                {
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+			return converter.from_bytes( toString(Key) );
 		}
 
 		double toDouble(const std::string &Key)
@@ -528,6 +537,26 @@ namespace inicpp
 			parse();
 
 			return true;
+		}
+
+		bool modify(const std::string &Section, const std::string &Key, const int &Value, const std::string &comment = "")
+		{  
+			std::string stringValue = std::to_string(Value);
+                        return modify(Section, Key, stringValue, comment);		
+		}
+
+		bool modify(const std::string &Section, const std::string &Key, const double &Value, const std::string &comment = "")
+		{
+			std::string stringValue = std::to_string(Value);
+			return modify(Section, Key, stringValue, comment);
+		}
+
+		bool modify(const std::string &Section, const std::string &Key, const std::wstring &Value, const std::string &comment = "")
+		{
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+			std::string stringValue = converter.to_bytes(Value);
+
+			return modify(Section, Key, stringValue, comment);
 		}
 
 		bool modifyComment(const std::string &Section, const std::string &Key, const std::string &comment)
