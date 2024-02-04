@@ -47,5 +47,14 @@ int main()
 	int http_port_i = _ini["math"].toInt("PI");
 	std::cout << "to int:\t\tmath.PI   = " << http_port_i << std::endl;
 
+	// std::wstring support
+	std::locale::global(std::locale("")); // support wide string output
+
+	std::wstring helloWorld_value = L"你好，世界"; // translate as : hello,world
+	_ini.modify("other", "desc", helloWorld_value, "this test for std::wstring. comment only if any.");
+
+	std::wstring wstr = _ini["other"].toWString("desc");
+	std::wcerr << "to wstring:\tother.desc= " << wstr << std::endl;
+
 	return 0;
 }
