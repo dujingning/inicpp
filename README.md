@@ -1,15 +1,15 @@
-### 一、Project
+### Ⅰ、Project
 You can see the project at [https://github.com/dujingning/inicpp.git](https://github.com/dujingning/inicpp.git) or [https://gitee.com/dujingning/inicpp](https://gitee.com/dujingning/inicpp).
 
 
 ---
 
-### 二、Description
+### Ⅱ、Description
 
-The INI header-only library for Modern C++ supports reading and writing, even writing comments. It is easy to use and can help simplify the process of working with INI files.（现代 C++ 的 INI header-only 库支持读写，支持写注释，易于使用。）
+The INI header-only library for Modern C++ supports reading and writing, even writing comments. It is easy to use and can help simplify the process of working with INI files.
 
 ---
-### 三、Usage
+### Ⅲ、Usage
 
 simple to use with C++11 or latter
 
@@ -160,5 +160,5 @@ PI=3.1415926
 ```
 
 ---
-### 四、End
+### Ⅳ、End
  The project was created by dujingning. 

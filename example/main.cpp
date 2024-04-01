@@ -19,6 +19,7 @@ int main()
 
 	// Use key-value pairs directly.
 	std::string rtsp_port = _ini["rtsp"]["port"];
+	std::cout << "get rtsp port:" << rtsp_port << std::endl;
 
 	// You can write section-key-value.
 	_ini.modify("rtsp", "port", "554");

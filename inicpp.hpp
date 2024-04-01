@@ -73,7 +73,7 @@ namespace inicpp
 		{
 		}
 
-		section(const std::string sectionName) : _sectionName(sectionName)
+		explicit section(const std::string &sectionName) : _sectionName(sectionName)
 		{
 		}
 
@@ -97,7 +97,7 @@ namespace inicpp
 			_lineNumber = lineNumber;
 		}
 
-		void setValue(std::string &Key, std::string &Value, int line)
+		void setValue(const std::string &Key, const std::string &Value, const int line)
 		{
 			_sectionMap[Key].Value = Value;
 			_sectionMap[Key].lineNumber = line;
@@ -122,7 +122,7 @@ namespace inicpp
 				return _lineNumber;
 			}
 
-			for (auto &data : _sectionMap)
+			for (const auto &data : _sectionMap)
 			{
 				if (data.second.lineNumber > line)
 				{
@@ -245,6 +245,7 @@ namespace inicpp
 				return;
 			}
 			_iniInfoMap.emplace(sec.name(), sec);
+			return;
 		}
 
 		void removeSection(const std::string &sectionName)
@@ -254,14 +255,15 @@ namespace inicpp
 				return;
 			}
 			_iniInfoMap.erase(sectionName);
+			return;
 		}
 
-		bool isSectionExist(std::string sectionName)
+		bool isSectionExist(const std::string& sectionName)
 		{
 			return !_iniInfoMap.count(sectionName) ? false : true;
 		}
 
-		const section &operator[](const std::string sectionName)
+		const section &operator[](const std::string& sectionName)
 		{
 			if (!_iniInfoMap.count(sectionName))
 			{
@@ -270,7 +272,7 @@ namespace inicpp
 			return _iniInfoMap[sectionName];
 		}
 
-		std::string getValue(std::string sectionName, std::string Key)
+		std::string getValue(const std::string& sectionName, const std::string& Key)
 		{
 			if (!_iniInfoMap.count(sectionName))
 			{
@@ -280,7 +282,7 @@ namespace inicpp
 		}
 
 		// for none section
-		int getLine(std::string Key)
+		int getLine(const std::string& Key)
 		{
 			if (!_iniInfoMap.count(""))
 			{
@@ -290,7 +292,7 @@ namespace inicpp
 		}
 
 		// for section-key
-		int getLine(std::string sectionName, std::string Key)
+		int getLine(const std::string& sectionName, const std::string& Key)
 		{
 			if (!_iniInfoMap.count(sectionName))
 			{
@@ -310,7 +312,7 @@ namespace inicpp
 	class IniManager
 	{
 	public:
-		explicit IniManager(std::string configFileName) : _configFileName(configFileName)
+		explicit IniManager(const std::string& configFileName) : _configFileName(configFileName)
 		{
 			parse();
 		}
@@ -345,7 +347,6 @@ namespace inicpp
 			_SumOfLines = 1;
 			do
 			{
-				unsigned int position = _iniFile.tellg();
 				std::getline(_iniFile, data);
 
 				if (!filterData(data))
@@ -492,10 +493,9 @@ namespace inicpp
 
 					output << keyValueData;
 					break;
-				}
 
-				if (line_number_mark > 0)
-				{ // replace it
+				} else	{ // replace it
+
 					std::string lineData;
 					int input_line_number = 0;
 
@@ -572,7 +572,7 @@ namespace inicpp
 									  { return c == ' ' || c == '\t'; }),
 					   data.end());
 
-			if (data.length() <= 0)
+			if (data.length() == 0)
 			{
 				return false;
 			}
