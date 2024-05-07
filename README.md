@@ -15,7 +15,7 @@ simple to use with C++11 or latter
 
 ##### * 1.read example
 ```cpp
-#include "inicpp.cpp"
+#include "inicpp.hpp"
 
 int main()
 {
@@ -27,7 +27,7 @@ int main()
 
 ##### * 2.write example
 ```cpp
-#include "inicpp.cpp"
+#include "inicpp.hpp"
 
 int main()
 {
@@ -39,7 +39,7 @@ int main()
 ```
 ##### * 3.or comment
 ```cpp
-#include "inicpp.cpp"
+#include "inicpp.hpp"
 
 int main()
 {
@@ -51,7 +51,7 @@ int main()
 ```
 ##### * 4.toString()、toInt()、toDouble()
 ```cpp
-#include "inicpp.cpp"
+#include "inicpp.hpp"
 
 int main()
 {

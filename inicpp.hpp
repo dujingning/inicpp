@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <fstream>
 #include <string>
+#include <array>
 #include <cstdio>
 #include <ctime>
 #include <map>
