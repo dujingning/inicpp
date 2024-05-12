@@ -446,6 +446,7 @@ namespace inicpp
 			}
 
 			int line_number_mark = -1;
+			bool isInputDataWited = false;
 
 			do
 			{
@@ -466,11 +467,20 @@ namespace inicpp
 
 							if (input_line_number == (line_number_mark + 1))
 							{ // new line,append to next line
+								isInputDataWited = true;
 								output << keyValueData;
 							}
 
 							output << lineData << "\n";
+
 						}
+
+						if ( input.eof() && !isInputDataWited )
+						{
+							isInputDataWited = true;
+							output << keyValueData;
+						}
+
 						break;
 					}
 				}
