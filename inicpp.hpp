@@ -157,7 +157,8 @@ namespace inicpp
 
 		void clear()
 		{
-			_sectionMap.clear();
+            _lineNumber = -1;
+			_sectionName.clear();
 			_sectionMap.clear();
 		}
 
@@ -255,7 +256,7 @@ namespace inicpp
 
 		void removeSection(const std::string &sectionName)
 		{
-			if (!_iniInfoMap.count(sectionName))
+			if ( !_iniInfoMap.count(sectionName) )
 			{
 				return;
 			}
@@ -275,6 +276,11 @@ namespace inicpp
 				return _iniInfoMap[""];
 			}
 			return _iniInfoMap[sectionName];
+		}
+
+		const int getSectionSize()
+		{
+			return _iniInfoMap.size();
 		}
 
 		std::string getValue(const std::string& sectionName, const std::string& Key)
@@ -486,19 +492,15 @@ namespace inicpp
 				}
 
 				if (line_number_mark <= 0)
-				{ // not find section/key write to end
+				{ // not find section/key write to head of file
 					input.seekg(0, input.beg);
 
-					std::string lineData;
-					while (std::getline(input, lineData))
-					{
-						output << lineData << "\n";
-					}
 
+					// write input to head
 					if (Section != "" && Section.find("[") == std::string::npos && Section.find("]") == std::string::npos && Section.find("=") == std::string::npos)
 					{
 						std::string newLine = "\n\n";
-						if (_iniData.empty())
+						if (_iniData.empty() || _iniData.getSectionSize() <= 0)
 						{
 							newLine.clear();
 						}
@@ -508,6 +510,14 @@ namespace inicpp
 					}
 
 					output << keyValueData;
+
+					// write others
+					std::string lineData;
+					while (std::getline(input, lineData))
+					{
+						output << lineData << "\n";
+					}
+
 					break;
 
 				} else	{ // replace it
