@@ -28,16 +28,17 @@
 #include <algorithm>
 #include <fstream>
 #include <string>
-#include <array>
-#include <cstdio>
-#include <ctime>
 #include <map>
 
+// for std::string <==> std::wstring convert
 #include <codecvt>
 #include <locale>
 
 
 #ifdef INICPP_DEBUG
+
+#include <array>
+#include <ctime>
 #include <iostream>
 
 class TimeFormatter
