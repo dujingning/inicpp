@@ -25,7 +25,6 @@
 #ifndef __JN_INICPP_H__
 #define __JN_INICPP_H__
 
-#include <iostream>
 #include <algorithm>
 #include <fstream>
 #include <string>
@@ -43,6 +42,7 @@ namespace inicpp
 #define CODE_INFO std::string(" | Code:\'file:") + std::string(__FILE__) + ",function:" + std::string(__FUNCTION__) + ",line:" + std::to_string(__LINE__) + '\''
 
 #ifdef INICPP_DEBUG
+#include <iostream>
 #define INI_DEBUG(x) std::cout << "INICPP " << TimeFormatter::format() << " : " << x << CODE_INFO << std::endl
 #else
 #define INI_DEBUG(x)
