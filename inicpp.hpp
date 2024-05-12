@@ -456,7 +456,7 @@ namespace inicpp
 
 			do
 			{
-				// exist key replace it, or need to create it
+				// exist key at one section replace it, or need to create it
 				if (_iniData.isSectionExist(Section))
 				{
 					line_number_mark = (*this)[Section].getLine(Key);
@@ -491,36 +491,58 @@ namespace inicpp
 					}
 				}
 
-				if (line_number_mark <= 0)
-				{ // not find section/key write to head of file
+				if (line_number_mark <= 0) // not found key at config file
+				{
 					input.seekg(0, input.beg);
 
-
-					// write input to head
+					bool isHoldSection = false;
+					std::string newLine = "\n\n";
 					if (Section != "" && Section.find("[") == std::string::npos && Section.find("]") == std::string::npos && Section.find("=") == std::string::npos)
 					{
-						std::string newLine = "\n\n";
 						if (_iniData.empty() || _iniData.getSectionSize() <= 0)
 						{
 							newLine.clear();
 						}
 
-						output << newLine << "[" << Section << "]"
-							   << "\n";
+					        isHoldSection = true;
 					}
 
-					output << keyValueData;
-
-					// write others
-					std::string lineData;
-					while (std::getline(input, lineData))
+					// 1.section is exist or empty section
+					if ( _iniData.isSectionExist(Section) || Section == "" )
 					{
-						output << lineData << "\n";
+						// write key/value to head
+						if ( isHoldSection )
+                                                {
+							output << newLine << "[" << Section << "]" << "\n";
+						}
+						output << keyValueData;
+						// write others
+						std::string lineData;
+						while (std::getline(input, lineData))
+						{
+							output << lineData << "\n";
+						}
+					}
+					// 2.section is not exist
+					else
+					{
+						// write others
+						std::string lineData;
+						while (std::getline(input, lineData))
+						{
+							output << lineData << "\n";
+						}
+						// write key/value to end
+						if ( isHoldSection )
+						{
+							output << newLine << "[" << Section << "]" << "\n";
+						}
+						output << keyValueData;
 					}
 
 					break;
 
-				} else	{ // replace it
+				} else	{ // found, replace it
 
 					std::string lineData;
 					int input_line_number = 0;

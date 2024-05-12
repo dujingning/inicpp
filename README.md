@@ -9,11 +9,16 @@ You can see the project at [https://github.com/dujingning/inicpp.git](https://gi
 The INI header-only library for Modern C++ supports reading and writing, even writing comments. It is easy to use and can help simplify the process of working with INI files.
 
 ---
-### Ⅲ、Usage
+### Ⅲ、Usage 
 
-simple to use with C++11 or latter
+#### * 0.simple to use with C++11 or latter
+```
+git clone https://github.com/dujingning/inicpp.git
+```
 
-##### * 1.read example
+include `inicpp.hpp`,declare class of `inicpp::iniReader`,then all done.
+
+#### * 1.read example
 ```cpp
 #include "inicpp.hpp"
 
@@ -25,7 +30,7 @@ int main()
 }
 ```
 
-##### * 2.write example
+#### * 2.write example
 ```cpp
 #include "inicpp.hpp"
 
@@ -37,7 +42,7 @@ int main()
     std::cout << _ini["rtsp"]["port"] << std::endl;
 }
 ```
-##### * 3.or comment
+#### * 3.or comment
 ```cpp
 #include "inicpp.hpp"
 
@@ -49,7 +54,7 @@ int main()
     std::cout << _ini["rtsp"]["port"] << std::endl;
 }
 ```
-##### * 4.toString()、toInt()、toDouble()
+#### * 4.toString()、toInt()、toDouble()
 ```cpp
 #include "inicpp.hpp"
 
@@ -73,90 +78,68 @@ int main()
 	std::cout << "to int:\t\thttp.port = " << http_port_i << std::endl;
 }
 ```
-##### * 5.For a full example, see example/main.cpp. You can compile it with `g++ -I../ -std=c++11 main.cpp -o iniExample` or any other method you prefer.
+#### * 5.For a full example, see `example/main.cpp`.
 
 
-```cpp
-#include "inicpp.hpp"
-#include <iomanip>
+You coulde compile it with `example/Makefile` or any other method you prefer.
 
-/* compile: g++ -I../ -std=c++11 main.cpp -o iniExample */
-int main()
-{
+if no make, use command: `g++ -I../ -std=c++11 main.cpp -o iniExample`
 
-	// Load the INI file.
-	inicpp::IniManager _ini("config.ini");
-
-	// Check if the key exists.
-	if (!_ini["rtsp"].isKeyExist("port"))
-	{
-		std::cout << "rtsp.port is not exist!" << std::endl;
-	}
-
-	// Modify or add key-value pairs.
-	_ini.modify("rtsp", "port", "554");
-
-	// Use key-value pairs directly.
-	std::string rtsp_port = _ini["rtsp"]["port"];
-
-	// You can write section-key-value.
-	_ini.modify("rtsp", "port", "554");
-
-	// Add a comment.
-	_ini.modify("rtsp", "port", "554", "this is the listen port for http server");
-
-	// Modify the comment.
-	_ini.modifyComment("rtsp", "port", "this is the listen port for rtsp server ***");
-
-	// Try to modify or add more.
-	_ini.modify("math", "PI", "3.1415926", "This is pi in mathematics.");
-
-	// You have obtained the key-value pair and saved it to your config file.
-	std::cout << "to string:\trtsp.port = " << _ini["rtsp"]["port"] << std::endl;
-
-	// Convert to string, default is string
-	std::string http_port_s = _ini["math"].toString("PI");
-	std::cout << "to string:\tmath.PI   = " << http_port_s << std::endl;
-
-	// Convert to double
-	double http_port_d = _ini["math"].toDouble("PI");
-	std::cout << "to double:\tmath.PI   = " << std::setprecision(10) << http_port_d << std::endl;
-
-	// Convert to int
-	int http_port_i = _ini["math"].toInt("PI");
-	std::cout << "to int:\t\tmath.PI   = " << http_port_i << std::endl;
-
-	return 0;
-}
-```
-* let the example work 
+#### * 6.how to compile example/main.cpp
+- compile `example/main.cpp`
 ```bash
-[root@jn inicpp]# ls
+[jn@jn inicpp]$ ls
 example  inicpp.hpp  LICENSE  README.md
-[root@jn inicpp]# cd example/
-[root@jn example]# grep -Rn g++
-main.cpp:4:/* compile: g++ -I../ -std=c++11 main.cpp -o iniExample */
-[root@jn example]# g++ -I../ -std=c++11 main.cpp -o iniExample
-[root@jn example]# ls
-iniExample  main.cpp
-[root@jn example]# ./iniExample
-rtsp.port is not exist!
+[jn@jn inicpp]$ cd example/
+[jn@jn example]$ make
+g++ -I../ -std=c++11 main.cpp -o iniExample
+[jn@jn example]$ ls
+iniExample  main.cpp  Makefile
+```
+
+- run example app `iniExample`
+```bash
+[jn@jn example]$ ./iniExample
+get rtsp port:555
 to string:      rtsp.port = 554
+to string:      math.PI   = 3.1415926
 to string:      math.PI   = 3.1415926
 to double:      math.PI   = 3.1415926
 to int:         math.PI   = 3
-[root@jn example]# ls
-config.ini  iniExample  main.cpp
-[root@jn example]# cat config.ini
+to wstring:     other.desc= 你好，世界
+[jn@jn example]$
+```
+
+- then you got config file `config.ini`
+```bash
+[jn@jn example]$ cat config.ini
+;no section test:add comment later.
+noSection=yes
+key0=noSectionAndComment
+key1=noSectionAndComment
+key2=noSectionAndComment
+[head]
+;thanks for your using inicpp project.
+title=inicpp
+;Permissive license for open-source software distribution.
+license=MIT
+
+
 [rtsp]
-;this is the listen port for rtsp server ***
+;this is the listen ip for rtsp server.
 port=554
+ip=127.0.0.1
 
 
 [math]
 ;This is pi in mathematics.
 PI=3.1415926
-[root@jn example]#
+
+
+[other]
+;this test for std::wstring. comment it.
+desc=你好，世界
+[jn@jn example]$
 ```
 
 ---
