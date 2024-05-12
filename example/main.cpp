@@ -1,4 +1,6 @@
 #include "inicpp.hpp"
+
+#include <iostream>
 #include <iomanip>
 
 /* compile: g++ -I../ -std=c++11 main.cpp -o iniExample */

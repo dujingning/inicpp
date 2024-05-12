@@ -39,14 +39,19 @@
 namespace inicpp
 {
 
-#define CODE_INFO std::string(" | Code:\'file:") + std::string(__FILE__) + ",function:" + std::string(__FUNCTION__) + ",line:" + std::to_string(__LINE__) + '\''
 
 #ifdef INICPP_DEBUG
+
 #include <iostream>
+
+#define CODE_INFO std::string(" | Code:\'file:") + std::string(__FILE__) + ",function:" + std::string(__FUNCTION__) + ",line:" + std::to_string(__LINE__) + '\''
 #define INI_DEBUG(x) std::cout << "INICPP " << TimeFormatter::format() << " : " << x << CODE_INFO << std::endl
-#else
+
+#else  // #ifdef INICPP_DEBUG
+
 #define INI_DEBUG(x)
-#endif
+
+#endif // #ifdef INICPP_DEBUG
 
 	class TimeFormatter
 	{
