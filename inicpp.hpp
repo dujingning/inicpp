@@ -36,35 +36,33 @@
 #include <codecvt>
 #include <locale>
 
-namespace inicpp
-{
-
 
 #ifdef INICPP_DEBUG
-
 #include <iostream>
+
+class TimeFormatter
+{
+public:
+	static std::string format(const std::string &format = "%Y-%m-%d %H:%M:%S")
+	{
+		std::time_t t = std::time(nullptr);
+		std::tm tm = *std::localtime(&t);
+		std::array<char, 100> buffer;
+		std::strftime(buffer.data(), buffer.size(), format.c_str(), &tm);
+		return buffer.data();
+	}
+};
 
 #define CODE_INFO std::string(" | Code:\'file:") + std::string(__FILE__) + ",function:" + std::string(__FUNCTION__) + ",line:" + std::to_string(__LINE__) + '\''
 #define INI_DEBUG(x) std::cout << "INICPP " << TimeFormatter::format() << " : " << x << CODE_INFO << std::endl
 
 #else  // #ifdef INICPP_DEBUG
-
 #define INI_DEBUG(x)
-
 #endif // #ifdef INICPP_DEBUG
 
-	class TimeFormatter
-	{
-	public:
-		static std::string format(const std::string &format = "%Y-%m-%d %H:%M:%S")
-		{
-			std::time_t t = std::time(nullptr);
-			std::tm tm = *std::localtime(&t);
-			std::array<char, 100> buffer;
-			std::strftime(buffer.data(), buffer.size(), format.c_str(), &tm);
-			return buffer.data();
-		}
-	};
+
+namespace inicpp
+{
 
 	typedef struct KeyValueNode
 	{
@@ -416,6 +414,7 @@ namespace inicpp
 
 			if (Key == "" || Value == "")
 			{
+				INI_DEBUG("Invalid parameter input: Key[" << Key << "],Value[" << Value << "]");
 				return false;
 			}
 
