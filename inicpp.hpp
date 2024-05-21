@@ -265,7 +265,7 @@ namespace inicpp
 			return;
 		}
 
-		bool isSectionExist(const std::string& sectionName)
+		bool isSectionExists(const std::string& sectionName)
 		{
 			return !_iniInfoMap.count(sectionName) ? false : true;
 		}
@@ -473,7 +473,7 @@ namespace inicpp
 			do
 			{
 				// exist key at one section replace it, or need to create it
-				if (_iniData.isSectionExist(Section))
+				if (_iniData.isSectionExists(Section))
 				{
 					line_number_mark = (*this)[Section].getLine(Key);
 
@@ -524,7 +524,7 @@ namespace inicpp
 					}
 
 					// 1.section is exist or empty section
-					if ( _iniData.isSectionExist(Section) || Section == "" )
+					if ( _iniData.isSectionExists(Section) || Section == "" )
 					{
 						// write key/value to head
 						if ( isHoldSection )
@@ -628,9 +628,9 @@ namespace inicpp
 			return modify(Section, Key, (*this)[Section][Key], comment);
 		}
 
-		bool isSectionExist(const std::string& sectionName)
+		bool isSectionExists(const std::string& sectionName)
 		{
-		        return _iniData.isSectionExist(sectionName);
+		        return _iniData.isSectionExists(sectionName);
 		}
 
 		inline std::list<std::string> getSectionsList()

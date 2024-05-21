@@ -32,7 +32,7 @@ int main()
 
 
 	/** 3. Check if the section exists. */
-	if (!_ini.isSectionExist("math"))
+	if (!_ini.isSectionExists("math"))
 	{
 	        std::cout << "section of math: not exist" << "\n\n";
 	}
