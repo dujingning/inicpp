@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <fstream>
 #include <string>
+#include <list>
 #include <map>
 
 // for std::string <==> std::wstring convert
@@ -157,12 +158,12 @@ namespace inicpp
 
 		void clear()
 		{
-            _lineNumber = -1;
+			_lineNumber = -1;
 			_sectionName.clear();
 			_sectionMap.clear();
 		}
 
-		bool isEmpty()
+		bool isEmpty() const
 		{
 			return _sectionMap.empty();
 		}
@@ -269,6 +270,21 @@ namespace inicpp
 			return !_iniInfoMap.count(sectionName) ? false : true;
 		}
 
+		// may contains default of Unnamed section with ""
+		std::list<std::string> getSectionsList()
+		{
+		       std::list<std::string> sectionList;
+		       for ( const auto& data: _iniInfoMap )
+		       {
+			       if ( data.first == "" && data.second.isEmpty() ) // default section: no section name,if empty,not count it.
+			       {
+			       		continue;
+			       }
+	                       sectionList.emplace_back( data.first );		       
+		       }
+		       return sectionList;
+		}
+
 		const section &operator[](const std::string& sectionName)
 		{
 			if (!_iniInfoMap.count(sectionName))
@@ -316,7 +332,7 @@ namespace inicpp
 		inline bool empty() { return _iniInfoMap.empty(); }
 
 	protected:
-		std::map<std::string, section> _iniInfoMap;
+		std::map<std::string/*Section Name*/, section> _iniInfoMap;
 	};
 
 	// todo if file is modified,never write back
@@ -610,6 +626,16 @@ namespace inicpp
 		bool modifyComment(const std::string &Section, const std::string &Key, const std::string &comment)
 		{
 			return modify(Section, Key, (*this)[Section][Key], comment);
+		}
+
+		bool isSectionExist(const std::string& sectionName)
+		{
+		        return _iniData.isSectionExist(sectionName);
+		}
+
+		inline std::list<std::string> getSectionsList()
+		{
+		       return _iniData.getSectionsList();
 		}
 
 	private:
