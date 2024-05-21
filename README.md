@@ -108,7 +108,7 @@ int main()
     return 0;
 }
 ```
-#### * 6.getSectionsList()
+#### * 6.isSectionExist()、getSectionsList()
 May contain unnamed sections: when keys are at the head of the file.
 ```bash
 #include "inicpp.hpp"
@@ -118,6 +118,13 @@ int main()
 {
     inicpp::IniManager _ini("config.ini");
 
+    // isSectionExist
+    if (!_ini.isSectionExist("math"))
+    {
+        std::cout << "section of math: not exist" << "\n\n";
+    }
+
+    // getSectionsList
     std::list<std::string> sectionList = _ini.getSectionsList();
 
     for(auto data:sectionList){ // print
