@@ -17,7 +17,7 @@ The INI header-only library for Modern C++ supports reading, writing, and even c
 git clone https://github.com/dujingning/inicpp.git
 ```
 
-Include `inicpp.hpp`, declare the `inicpp::iniReader` class, and you're all set.
+Include `inicpp.hpp`, declare the `inicpp::IniManager` class, and you're all set.
 
 #### * 1.read example
 Read: Load file to memory, used directly by the user.
