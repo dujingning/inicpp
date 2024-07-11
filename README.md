@@ -167,8 +167,7 @@ to wstring:     other.desc= 你好，世界
 [jn@jn example]$
 ```
 
-- then you got config file `config.ini`
-- Then you will get the config file config.ini.
+- Then you will get the config file `config.ini`.
 ```bash
 [jn@jn example]$ cat config.ini
 ;no section test:add comment later.
