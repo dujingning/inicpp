@@ -25,6 +25,8 @@
 #ifndef __JN_INICPP_H__
 #define __JN_INICPP_H__
 
+#include <cstddef>
+
 #include <algorithm>
 #include <fstream>
 #include <string>
@@ -294,7 +296,7 @@ namespace inicpp
 			return _iniInfoMap[sectionName];
 		}
 
-		const int getSectionSize()
+		inline std::size_t getSectionSize()
 		{
 			return _iniInfoMap.size();
 		}
