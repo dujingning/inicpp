@@ -1,5 +1,5 @@
 ### Ⅰ、Project
-You can view the project at [https://github.com/dujingning/ini4cpp.git](https://github.com/dujingning/ini4cpp.git) or [https://gitee.com/dujingning/inicpp](https://gitee.com/dujingning/inicpp).
+You can view the project at [https://github.com/dujingning/ini4cpp.git](https://github.com/dujingning/inicpp.git) or [https://gitee.com/dujingning/inicpp](https://gitee.com/dujingning/inicpp).
 
 #### * To support open source, please give us a star. Thank you very much!
 
@@ -16,7 +16,7 @@ The INI header-only library for Modern C++ supports reading, writing, and even c
 
 #### * 0.Simple to use with C++11 or later.
 ```
-git clone https://github.com/dujingning/ini4cpp.git
+git clone https://github.com/dujingning/inicpp.git
 ```
 
 Include `inicpp.hpp`, declare the `inicpp::IniManager` class, and you're all set.
@@ -145,9 +145,9 @@ If make is not available, use the following command: `g++ -I../ -std=c++11 main.
 #### * 8.how to compile example/main.cpp
 - Compile `example/main.cpp`
 ```bash
-[jn@jn ini4cpp]$ ls
+[jn@jn inicpp]$ ls
 example  inicpp.hpp  LICENSE  README.md
-[jn@jn ini4cpp]$ cd example/
+[jn@jn inicpp]$ cd example/
 [jn@jn example]$ make
 g++ -I../ -std=c++11 main.cpp -o iniExample
 [jn@jn example]$ ls
