@@ -411,6 +411,9 @@ namespace inicpp
 					std::string key = data.substr(0, pos);
 					std::string value = data.substr(pos + 1);
 
+					trimEdges(key);
+					trimEdges(value);
+
 					sectionRecord.setValue(key, value, _SumOfLines);
 				}
 
@@ -640,11 +643,6 @@ namespace inicpp
 	private:
 		bool filterData(std::string &data)
 		{
-			// filter
-			data.erase(std::remove_if(data.begin(), data.end(), [](char c)
-									  { return c == ' ' || c == '\t'; }),
-					   data.end());
-
 			if (data.length() == 0)
 			{
 				return false;
@@ -661,6 +659,20 @@ namespace inicpp
 			}
 
 			return true;
+		}
+
+		void trimEdges(std::string &data)
+		{
+			// remove left ' ' and '\t'
+			data.erase(data.begin(), std::find_if(data.begin(), data.end(), [](unsigned char c)
+												  { return !std::isspace(c); }));
+			// remove right ' ' and '\t'
+			data.erase(std::find_if(data.rbegin(), data.rend(), [](unsigned char c)
+									{ return !std::isspace(c); })
+						   .base(),
+					   data.end());
+
+			INI_DEBUG( "trimEdges data:|" << data << "|");
 		}
 
 	private:
