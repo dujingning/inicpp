@@ -1,26 +1,26 @@
 /*
-* MIT License
-*
-* Copyright (c) 2023 dujingning <djn2019x@163.com> <https://github.com/dujingning/inicpp.git>
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+ * MIT License
+ *
+ * Copyright (c) 2023 dujingning <djn2019x@163.com> <https://github.com/dujingning/inicpp.git>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #ifndef __JN_INICPP_H__
 #define __JN_INICPP_H__
@@ -36,7 +36,6 @@
 // for std::string <==> std::wstring convert
 #include <codecvt>
 #include <locale>
-
 
 #ifdef INICPP_DEBUG
 
@@ -60,10 +59,9 @@ public:
 #define CODE_INFO std::string(" | Code:\'file:") + std::string(__FILE__) + ",function:" + std::string(__FUNCTION__) + ",line:" + std::to_string(__LINE__) + '\''
 #define INI_DEBUG(x) std::cout << "INICPP " << TimeFormatter::format() << " : " << x << CODE_INFO << std::endl
 
-#else  // #ifdef INICPP_DEBUG
+#else // #ifdef INICPP_DEBUG
 #define INI_DEBUG(x)
 #endif // #ifdef INICPP_DEBUG
-
 
 namespace inicpp
 {
@@ -204,10 +202,10 @@ namespace inicpp
 			return _sectionMap[Key].Value;
 		}
 
-                std::wstring toWString(const std::string &Key)
-                {
+		std::wstring toWString(const std::string &Key)
+		{
 			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-			return converter.from_bytes( toString(Key) );
+			return converter.from_bytes(toString(Key));
 		}
 
 		double toDouble(const std::string &Key)
@@ -259,7 +257,7 @@ namespace inicpp
 
 		void removeSection(const std::string &sectionName)
 		{
-			if ( !_iniInfoMap.count(sectionName) )
+			if (!_iniInfoMap.count(sectionName))
 			{
 				return;
 			}
@@ -267,7 +265,7 @@ namespace inicpp
 			return;
 		}
 
-		bool isSectionExists(const std::string& sectionName)
+		bool isSectionExists(const std::string &sectionName)
 		{
 			return !_iniInfoMap.count(sectionName) ? false : true;
 		}
@@ -275,19 +273,19 @@ namespace inicpp
 		// may contains default of Unnamed section with ""
 		std::list<std::string> getSectionsList()
 		{
-		       std::list<std::string> sectionList;
-		       for ( const auto& data: _iniInfoMap )
-		       {
-			       if ( data.first == "" && data.second.isEmpty() ) // default section: no section name,if empty,not count it.
-			       {
-			       		continue;
-			       }
-	                       sectionList.emplace_back( data.first );		       
-		       }
-		       return sectionList;
+			std::list<std::string> sectionList;
+			for (const auto &data : _iniInfoMap)
+			{
+				if (data.first == "" && data.second.isEmpty()) // default section: no section name,if empty,not count it.
+				{
+					continue;
+				}
+				sectionList.emplace_back(data.first);
+			}
+			return sectionList;
 		}
 
-		const section &operator[](const std::string& sectionName)
+		const section &operator[](const std::string &sectionName)
 		{
 			if (!_iniInfoMap.count(sectionName))
 			{
@@ -301,7 +299,7 @@ namespace inicpp
 			return _iniInfoMap.size();
 		}
 
-		std::string getValue(const std::string& sectionName, const std::string& Key)
+		std::string getValue(const std::string &sectionName, const std::string &Key)
 		{
 			if (!_iniInfoMap.count(sectionName))
 			{
@@ -311,7 +309,7 @@ namespace inicpp
 		}
 
 		// for none section
-		int getLine(const std::string& Key)
+		int getLine(const std::string &Key)
 		{
 			if (!_iniInfoMap.count(""))
 			{
@@ -321,7 +319,7 @@ namespace inicpp
 		}
 
 		// for section-key
-		int getLine(const std::string& sectionName, const std::string& Key)
+		int getLine(const std::string &sectionName, const std::string &Key)
 		{
 			if (!_iniInfoMap.count(sectionName))
 			{
@@ -334,14 +332,14 @@ namespace inicpp
 		inline bool empty() { return _iniInfoMap.empty(); }
 
 	protected:
-		std::map<std::string/*Section Name*/, section> _iniInfoMap;
+		std::map<std::string /*Section Name*/, section> _iniInfoMap;
 	};
 
 	// todo if file is modified,never write back
 	class IniManager
 	{
 	public:
-		explicit IniManager(const std::string& configFileName) : _configFileName(configFileName)
+		explicit IniManager(const std::string &configFileName) : _configFileName(configFileName)
 		{
 			parse();
 		}
@@ -414,7 +412,6 @@ namespace inicpp
 					std::string value = data.substr(pos + 1);
 
 					sectionRecord.setValue(key, value, _SumOfLines);
-
 				}
 
 				++_SumOfLines;
@@ -496,10 +493,9 @@ namespace inicpp
 							}
 
 							output << lineData << "\n";
-
 						}
 
-						if ( input.eof() && !isInputDataWited )
+						if (input.eof() && !isInputDataWited)
 						{
 							isInputDataWited = true;
 							output << keyValueData;
@@ -522,15 +518,15 @@ namespace inicpp
 							newLine.clear();
 						}
 
-					        isHoldSection = true;
+						isHoldSection = true;
 					}
 
 					// 1.section is exist or empty section
-					if ( _iniData.isSectionExists(Section) || Section == "" )
+					if (_iniData.isSectionExists(Section) || Section == "")
 					{
 						// write key/value to head
-						if ( isHoldSection )
-                                                {
+						if (isHoldSection)
+						{
 							output << newLine << "[" << Section << "]" << "\n";
 						}
 						output << keyValueData;
@@ -551,7 +547,7 @@ namespace inicpp
 							output << lineData << "\n";
 						}
 						// write key/value to end
-						if ( isHoldSection )
+						if (isHoldSection)
 						{
 							output << newLine << "[" << Section << "]" << "\n";
 						}
@@ -559,8 +555,9 @@ namespace inicpp
 					}
 
 					break;
-
-				} else	{ // found, replace it
+				}
+				else
+				{ // found, replace it
 
 					std::string lineData;
 					int input_line_number = 0;
@@ -606,9 +603,9 @@ namespace inicpp
 		}
 
 		bool modify(const std::string &Section, const std::string &Key, const int &Value, const std::string &comment = "")
-		{  
+		{
 			std::string stringValue = std::to_string(Value);
-                        return modify(Section, Key, stringValue, comment);		
+			return modify(Section, Key, stringValue, comment);
 		}
 
 		bool modify(const std::string &Section, const std::string &Key, const double &Value, const std::string &comment = "")
@@ -630,14 +627,14 @@ namespace inicpp
 			return modify(Section, Key, (*this)[Section][Key], comment);
 		}
 
-		bool isSectionExists(const std::string& sectionName)
+		bool isSectionExists(const std::string &sectionName)
 		{
-		        return _iniData.isSectionExists(sectionName);
+			return _iniData.isSectionExists(sectionName);
 		}
 
 		inline std::list<std::string> getSectionsList()
 		{
-		       return _iniData.getSectionsList();
+			return _iniData.getSectionsList();
 		}
 
 	private:
