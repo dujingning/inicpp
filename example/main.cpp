@@ -3,7 +3,6 @@
 #include <iostream>
 #include <iomanip>
 
-
 void printList(std::list<std::string>& theList)
 {
 	std::cout << (theList.size() > 0 ? "|" : "") ;
@@ -13,7 +12,6 @@ void printList(std::list<std::string>& theList)
 	}
 	std::cout << std::endl << std::endl;
 }
-
 
 /**
   compile: g++ -I../ -std=c++11 main.cpp -o iniExample
@@ -82,15 +80,6 @@ int main()
 	  // - Convert to int
 	int http_port_i = _ini["math"].toInt("PI");
 	std::cout << "to int:\t\tmath.PI   = " << http_port_i << std::endl;
-
-	  // - convert to std::wstring.
-	std::locale::global(std::locale("")); // support wide string output
-
-	std::wstring helloWorld_value = L"你好，世界"; // translate as : hello,world
-	_ini.modify("other", "desc", helloWorld_value, "this test for std::wstring. comment it.");
-
-	std::wstring wstr = _ini["other"].toWString("desc");
-	std::wcerr << "to wstring:\tother.desc= " << wstr << "\n\n";
 
 
 	/** 8. Unnamed section: at head of ini file,with no section name found. */

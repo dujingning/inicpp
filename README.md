@@ -157,14 +157,22 @@ iniExample  main.cpp  Makefile
 - Run example app `iniExample`
 ```bash
 [jn@jn example]$ ./iniExample
+rtsp.port: not exist!
+
+section of math: not exist
+
+Got Section Name List(size:0) :
+
 get rtsp port:555
+
 to string:      rtsp.port = 554
 to string:      math.PI   = 3.1415926
 to string:      math.PI   = 3.1415926
 to double:      math.PI   = 3.1415926
 to int:         math.PI   = 3
-to wstring:     other.desc= 你好，世界
-[jn@jn example]$
+Got Section Name List(size:4) :||head|math|rtsp|
+
+[jn@jn example]$ 
 ```
 
 - Then you will get the config file `config.ini`.
@@ -191,11 +199,6 @@ ip=127.0.0.1
 [math]
 ;This is pi in mathematics.
 PI=3.1415926
-
-
-[other]
-;this test for std::wstring. comment it.
-desc=你好，世界
 [jn@jn example]$
 ```
 

@@ -33,9 +33,12 @@
 #include <list>
 #include <map>
 
+
+#ifdef _ENBABLE_INICPP_STD_WSTRING_ // Not all of C++ 11 support <codecvt> 
 // for std::string <==> std::wstring convert
 #include <codecvt>
 #include <locale>
+#endif
 
 #ifdef INICPP_DEBUG
 
@@ -202,11 +205,13 @@ namespace inicpp
 			return _sectionMap[Key].Value;
 		}
 
+#ifdef _ENBABLE_INICPP_STD_WSTRING_
 		std::wstring toWString(const std::string &Key)
 		{
 			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 			return converter.from_bytes(toString(Key));
 		}
+#endif
 
 		double toDouble(const std::string &Key)
 		{
@@ -617,6 +622,7 @@ namespace inicpp
 			return modify(Section, Key, stringValue, comment);
 		}
 
+#ifdef _ENBABLE_INICPP_STD_WSTRING_
 		bool modify(const std::string &Section, const std::string &Key, const std::wstring &Value, const std::string &comment = "")
 		{
 			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
@@ -624,6 +630,7 @@ namespace inicpp
 
 			return modify(Section, Key, stringValue, comment);
 		}
+#endif
 
 		bool modifyComment(const std::string &Section, const std::string &Key, const std::string &comment)
 		{
