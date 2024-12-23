@@ -8,10 +8,13 @@ You can view the project at [https://github.com/dujingning/inicpp.git](https://g
 
 ### Ⅱ、Description
 
-The INI header-only library for Modern C++ supports reading, writing, and even commenting. It is easy to use and simplifies working with INI files.
+The INI header-only library for Modern C++ supports **reading**, **writing**, and even **commenting**. It is easy to use and simplifies working with INI files.
+
+- New Feature : [Super Easy Binding to Your Data Structures (For Read)](#6super-easy-binding-to-your-data-structures-read).
 
 
 ---
+
 ### Ⅲ、Usage 
 
 #### * 0.Simple to use with C++11 or later.
@@ -21,8 +24,8 @@ git clone https://github.com/dujingning/inicpp.git
 
 Include `inicpp.hpp`, declare the `inicpp::IniManager` class, and you're all set.
 
-#### * 1.read example
-Read: Load file to memory, used directly by the user.
+#### 1.read example
+Read: easy to use.
 ```cpp
 #include "inicpp.hpp"
 #include <iostream>
@@ -31,11 +34,14 @@ int main()
 {
     inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
 
-    std::cout << _ini["rtsp"]["port"] << std::endl;
+    int         port = _ini["server"]["port"];
+    std::string ip   = _ini["server"]["ip"];
+
+    std::cout << ip << ":" << port << std::endl;
 }
 ```
 
-#### * 2.write example
+#### 2.write example
 Write: Modify directly to the file.
 ```cpp
 #include "inicpp.hpp"
@@ -45,11 +51,12 @@ int main()
 {
     inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
 
-    _ini.modify("rtsp","port","554");
-    std::cout << _ini["rtsp"]["port"] << std::endl;
+    _ini.modify("server","ip","192.168.3.35");
+    _ini.modify("server","port",554);
+    std::cout << _ini["server"]["port"] << std::endl;
 }
 ```
-#### * 3.or comment
+#### 3.comment example
 Comment: Write comments for key-value pairs.
 ```cpp
 #include "inicpp.hpp"
@@ -57,14 +64,13 @@ Comment: Write comments for key-value pairs.
 
 int main()
 {
-    inicpp::iniReader _ini("config.ini"); // Load and parse the INI file.
-
-    _ini.modify("rtsp","port","554","this is the listen port for rtsp server");
-    std::cout << _ini["rtsp"]["port"] << std::endl;
+    inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
+    // comment section/key
+    _ini.modifyComment("server", "port", "this is the listen ip for server.");
 }
 ```
-#### * 4.toString()、toInt()、toDouble()
-Convert: From string to type.
+#### 4.toString()、toInt()、toDouble()
+Convert: From string to type (No exception).
 ```cpp
 #include "inicpp.hpp"
 #include <iostream>
@@ -72,45 +78,23 @@ Convert: From string to type.
 int main()
 {
     inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
-    _ini.modify("rtsp","port","554","this is the listen port for rtsp server");
-    std::cout << _ini["rtsp"]["port"] << std::endl;
+    _ini.modify("server","port","554","this is the listen port for server");
+    std::cout << _ini["server"]["port"] << std::endl;
 
     // Convert to string, default is string
-    std::string http_port_s = _ini["http"].toString("port");
-    std::cout << "to string:\thttp.port = " << http_port_s << std::endl;
+    std::string http_port_s = _ini["server"].toString("port");
+    std::cout << "to string:\tserver.port = " << http_port_s << std::endl;
 
     // Convert to double
-    double http_port_d = _ini["http"].toDouble("port");
-    std::cout << "to double:\thttp.port = " << http_port_d << std::endl;
+    double http_port_d = _ini["server"].toDouble("port");
+    std::cout << "to double:\tserver.port = " << http_port_d << std::endl;
 
     // Convert to int
-    int http_port_i = _ini["http"].toInt("port");
-    std::cout << "to int:\t\thttp.port = " << http_port_i << std::endl;
+    int http_port_i = _ini["server"].toInt("port");
+    std::cout << "to int:\t\tserver.port = " << http_port_i << std::endl;
 }
 ```
-#### * 5.isKeyExists()
-Check: If the key exists.
-```cpp
-#include "inicpp.hpp"
-#include <iostream>
-
-int main()
-{
-    inicpp::IniManager _ini("config.ini");
-
-    if (!_ini["rtsp"].isKeyExist("port"))
-    {
-        std::cout << "rtsp.port: not exist!" << "\n";
-    }
-    else
-    {
-        std::cout << "rtsp.port: not exist!" << "\n";
-    }
-
-    return 0;
-}
-```
-#### * 6.isSectionExists()、getSectionsList()
+#### 5.isKeyExists()、isSectionExists()、getSectionsList()
 May contain unnamed sections: when keys are at the head of the file.
 ```bash
 #include "inicpp.hpp"
@@ -119,6 +103,12 @@ May contain unnamed sections: when keys are at the head of the file.
 int main()
 {
     inicpp::IniManager _ini("config.ini");
+
+    // isKeyExist
+    if (!_ini["server"].isKeyExist("port"))
+    {
+        std::cout << "server.port: not exist!" << "\n";
+    }
 
     // isSectionExists
     if (!_ini.isSectionExists("math"))
@@ -135,14 +125,79 @@ int main()
 }
 ```
 
-#### * 7.For a full example, see `example/main.cpp`.
+#### 6.Super Easy Binding to Your Data Structures (Read).
 
+config.ini :
+```
+title=config.ini
+[server]
+isKeepalived=true
+;this is the listen ip for server.
+port=8080
+ip=127.0.0.1
+
+
+[math]
+;Comment: This is pi in mathematics.
+PI=3.141592653589793238462643383279502884
+```
+config.cpp
+```cpp
+#include "inicpp.hpp"
+#include <iostream>
+#include <iomanip>
+
+#define CONFIG_FILE "config.ini"
+
+class appConfig
+{
+public:
+	typedef struct Config
+	{
+		typedef struct Server
+		{
+			std::string ip;
+			unsigned short port;
+			bool isKeepalived;
+		} Server;
+
+		std::string title;
+		Server server;
+		double PI;
+	} Config;
+
+	static const Config readConfig()
+	{
+		inicpp::IniManager _ini(CONFIG_FILE);
+
+		return Config{
+			title : _ini[""]["title"],
+			server : {ip : _ini["server"]["ip"],
+					  port : _ini["server"]["port"],
+					  isKeepalived : _ini["server"]["isKeepalived"]},
+			PI : _ini["math"]["PI"],
+		};
+	}
+};
+
+int main()
+{
+	/** easy read for app as struct */
+	appConfig::Config config = appConfig::readConfig();
+	std::cout << "title:      \t" << config.title << std::endl;
+	std::cout << "server.port:\t" << config.server.port << std::endl;
+	std::cout << "server.ip:  \t" << config.server.ip << std::endl;
+	std::cout << "server.alive:\t" << config.server.isKeepalived << std::endl;
+	std::cout << "math.PI:    \t" << std::setprecision(20) << config.PI << std::endl;
+	return 0;
+}
+```
+
+#### 7.how to use example/main.cpp
 You can compile it using `example/Makefile` or any other method you prefer.
 
 If make is not available, use the following command: `g++ -I../ -std=c++11 main.cpp -o iniExample`.
 
-
-#### * 8.how to compile example/main.cpp
 - Compile `example/main.cpp`
 ```bash
 [jn@jn inicpp]$ ls
@@ -156,50 +211,30 @@ iniExample  main.cpp  Makefile
 
 - Run example app `iniExample`
 ```bash
-[jn@jn example]$ ./iniExample
-rtsp.port: not exist!
-
-section of math: not exist
-
-Got Section Name List(size:0) :
-
-get rtsp port:555
-
-to string:      rtsp.port = 554
-to string:      math.PI   = 3.1415926
-to string:      math.PI   = 3.1415926
-to double:      math.PI   = 3.1415926
-to int:         math.PI   = 3
-Got Section Name List(size:4) :||head|math|rtsp|
-
-[jn@jn example]$ 
+[root@VM-24-13-centos example]# ./iniExample
+title:          config.ini
+server.port:    8080
+server.ip:      127.0.0.1
+server.alive:   1
+math.PI:        3.141592653589793116
+[root@VM-24-13-centos example]#
 ```
 
-- Then you will get the config file `config.ini`.
+- Configuration file `config.ini` has been created.
 ```bash
-[jn@jn example]$ cat config.ini
-;no section test:add comment later.
-noSection=yes
-key0=noSectionAndComment
-key1=noSectionAndComment
-key2=noSectionAndComment
-[head]
-;thanks for your using inicpp project.
-title=inicpp
-;Permissive license for open-source software distribution.
-license=MIT
-
-
-[rtsp]
-;this is the listen ip for rtsp server.
-port=554
+[root@VM-24-13-centos example]# cat config.ini
+title=config.ini
+[server]
+isKeepalived=true
+;this is the listen ip for server.
+port=8080
 ip=127.0.0.1
 
 
 [math]
-;This is pi in mathematics.
-PI=3.1415926
-[jn@jn example]$
+;Comment: This is pi in mathematics.
+PI=3.141592653589793238462643383279502884
+[root@VM-24-13-centos example]#
 ```
 
 ---

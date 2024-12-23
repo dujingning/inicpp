@@ -3,98 +3,117 @@
 #include <iostream>
 #include <iomanip>
 
-void printList(std::list<std::string>& theList)
+#define CONFIG_FILE "config.ini"
+
+void writeExample();
+void readExample();
+
+class appConfig
 {
-	std::cout << (theList.size() > 0 ? "|" : "") ;
-	for (const std::string& sectionName : theList)
+public:
+	typedef struct Config
 	{
-	        std::cout << sectionName << "|";
+		typedef struct Server
+		{
+			std::string ip;
+			unsigned short port;
+			bool isKeepalived;
+		} Server;
+
+		std::string title;
+		Server server;
+		double PI;
+	} Config;
+
+	static const Config readConfig()
+	{
+		inicpp::IniManager _ini(CONFIG_FILE);
+
+		return Config{
+			title : _ini[""]["title"],
+			server : {ip : _ini["server"]["ip"],
+					  port : _ini["server"]["port"],
+					  isKeepalived : _ini["server"]["isKeepalived"]},
+			PI : _ini["math"]["PI"],
+		};
 	}
-	std::cout << std::endl << std::endl;
-}
+};
 
 /**
   compile: g++ -I../ -std=c++11 main.cpp -o iniExample
 */
 int main()
 {
-	/** 1. Load the INI file. */
-	inicpp::IniManager _ini("config.ini");
+	/** write and read example */
+	writeExample();
+	readExample();
 
-
-	/** 2. Check if the key exists. */
-	if (!_ini["rtsp"].isKeyExist("port"))
-	{
-		std::cout << "rtsp.port: not exist!" << "\n\n";
-	}
-
-
-	/** 3. Check if the section exists. */
-	if (!_ini.isSectionExists("math"))
-	{
-	        std::cout << "section of math: not exist" << "\n\n";
-	}
-
-
-	/** 4. Get all sections as std::list<std::string>. */
-	std::list<std::string> sectionList = _ini.getSectionsList(); // may contains Unnamed section, but keys at head of file
-	std::cout << "Got Section Name List(size:" << sectionList.size() << ") :"; 
-	printList(sectionList);
-
-
-	/** 5. library head */
-	_ini.modify("head", "title", "inicpp","thanks for your using inicpp project.");
-	_ini.modify("head", "license", "MIT", "Permissive license for open-source software distribution.");
-
-
-	/** 6. Add section-key-value pairs or Modify later. */
-	_ini.modify("rtsp", "port", "554");
-	_ini.modify("rtsp", "port", "555");
-	_ini.modify("rtsp", "ip", "127.0.0.1");
-
-	  // - Read key-value pairs directly.
-	std::string rtsp_port = _ini["rtsp"]["port"];
-	std::cout << "get rtsp port:" << rtsp_port << "\n\n";;
-
-	  // - Add a comment.
-	_ini.modify("rtsp", "port", "554", "this is the listen port for http server.");
-
-	  // - Modify the comment.
-	_ini.modifyComment("rtsp", "port", "this is the listen ip for rtsp server.");
-
-	  // - You have obtained the key-value pair and saved it to your config file.
-	std::cout << "to string:\trtsp.port = " << _ini["rtsp"]["port"] << std::endl;
-
-
-	/** 7. Convert type. */
-	_ini.modify("math", "PI", "3.1415926", "This is pi in mathematics.");
-
-	  // Convert to string, default is string.
-	std::cout << "to string:\tmath.PI   = " << _ini["math"]["PI"] << std::endl;
-	std::cout << "to string:\tmath.PI   = " << _ini["math"].toString("PI") << std::endl;
-
-	  // - Convert to double
-	double http_port_d = _ini["math"].toDouble("PI");
-	std::cout << "to double:\tmath.PI   = " << std::setprecision(10) << http_port_d << std::endl;
-
-	  // - Convert to int
-	int http_port_i = _ini["math"].toInt("PI");
-	std::cout << "to int:\t\tmath.PI   = " << http_port_i << std::endl;
-
-
-	/** 8. Unnamed section: at head of ini file,with no section name found. */
-	_ini.modify("", "noSection", "no", "no section test.");
-	_ini.modify("", "noSection", "yes", "no section test:add comment later.");
-
-	_ini.modify("", "key0", "noSectionAndComment");
-	_ini.modify("", "key1", "noSectionAndComment");
-	_ini.modify("", "key2", "noSectionAndComment");
-
-
-	/** Print all sections again */
-	sectionList = _ini.getSectionsList();  // may contains Unnamed section, but keys at head of file.
-	std::cout << "Got Section Name List(size:" << sectionList.size() << ") :"; 
-	printList(sectionList);
+	/** Bind to Struct */
+	appConfig::Config config = appConfig::readConfig();
+	std::cout << "title:      \t" << config.title << std::endl;
+	std::cout << "server.port:\t" << config.server.port << std::endl;
+	std::cout << "server.ip:  \t" << config.server.ip << std::endl;
+	std::cout << "server.alive:\t" << config.server.isKeepalived << std::endl;
+	std::cout << "math.PI:    \t" << std::setprecision(20) << config.PI << std::endl;
 
 	return 0;
+}
+
+void writeExample()
+{
+	inicpp::IniManager _ini(CONFIG_FILE);
+
+	/** write to file. */
+	_ini.modify("server", "isKeepalived", "true");
+	_ini.modify("server", "port", "8080");
+	_ini.modify("server", "ip", "127.0.0.1");
+	_ini.modify("math", "PI", "3.141592653589793238462643383279502884", "Comment: This is pi in mathematics."); // with a comment.
+
+	// - add the comment later.
+	_ini.modifyComment("server", "port", "this is the listen ip for server.");
+
+	_ini.modify("title", "config.ini"); // no need sections
+	_ini.modifyComment("", "title", "This is the title."); // add comment
+
+}
+
+/**
+ * Note: The functions toInt(), toDouble(), and toString() will never throw an exception.
+ *       However, '_ini["any"]["any"]' may throw an error if a key is not found
+ *       or if a conversion error occurs.
+ */
+void readExample()
+{
+	inicpp::IniManager _ini(CONFIG_FILE);
+
+	std::string server_port_s = _ini["server"]["port"];
+	std::string server_ip_s = _ini["server"]["ip"];
+
+	int server_port_i = _ini["server"]["port"];
+	// - Convert to string.
+	std::string PI_s = _ini["math"]["PI"];
+	PI_s = _ini["math"]["PI"].operator std::string();
+	PI_s = _ini["math"]["PI"].String();
+	PI_s = _ini["math"]["PI"].as<std::string>();
+	// - Convert to double.
+	double PI_d = _ini["math"]["PI"];
+	// - Convert to int.
+	int PI_i = _ini["math"]["PI"];
+	unsigned int PI_ui = _ini["math"]["PI"];
+	// - Or others
+	float PI_f = _ini["math"]["PI"];
+	short PI_si = _ini["math"]["PI"];
+	char PI_c = _ini["math"]["PI"];
+	// - Diy, any you want
+	long long PI_ll = _ini["math"]["PI"].as<long long>();
+
+	PI_c = _ini["math"]["PI"];
+
+	// - Not throw exceptions
+	PI_s = _ini["math"].toString("PI");
+	PI_s = _ini["math"].toDouble("PI");
+	PI_i = _ini["math"].toInt("PI");
+
+	// - Bind to Struct
+	appConfig::Config config = appConfig::readConfig();
 }

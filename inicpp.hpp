@@ -26,15 +26,17 @@
 #define __JN_INICPP_H__
 
 #include <cstddef>
+#include <stdexcept>
+
+#include <fstream>
+#include <sstream>
 
 #include <algorithm>
-#include <fstream>
 #include <string>
 #include <list>
 #include <map>
 
-
-#ifdef _ENBABLE_INICPP_STD_WSTRING_ // Not all of C++ 11 support <codecvt> 
+#ifdef _ENBABLE_INICPP_STD_WSTRING_ // Not all of C++ 11 support <codecvt>
 // for std::string <==> std::wstring convert
 #include <codecvt>
 #include <locale>
@@ -74,6 +76,105 @@ namespace inicpp
 		std::string Value = "";
 		int lineNumber = -1; // text line start with 1
 	} KeyValueNode;
+
+	class ValueProxy
+	{
+	private:
+		std::string &value;
+
+	public:
+		ValueProxy(std::string &value) : value(value) {}
+
+		template <typename T>
+		ValueProxy(const T &value) : value(to_string(value)) {}
+
+		template <typename T>
+		static std::string to_string(const T &value)
+		{
+			std::ostringstream oss;
+			oss << value;
+			return oss.str();
+		}
+
+		// template <typename T>
+		// operator T() const
+		// {
+		// 	static_assert(!std::is_pointer<T>::value, "Pointer types are not supported for conversion.");
+		// 	std::istringstream iss(value);
+		// 	T result;
+		// 	if (!(iss >> result))
+		// 	{
+		// 		throw std::runtime_error("Type mismatch or invalid conversion.");
+		// 	}
+		// 	return result;
+		// }
+		template <typename T>
+		T as() const
+		{
+			static_assert(!std::is_pointer<T>::value, "Pointer types are not supported for conversion.");
+			std::istringstream iss(value);
+			T result;
+			if (!(iss >> result))
+			{
+				throw std::runtime_error("Type mismatch or invalid conversion.");
+			}
+			return result;
+		}
+
+		operator char() const { return this->as<char>(); }
+		operator short() const { return this->as<short>(); }
+		operator int() const { return this->as<int>(); }
+		operator long() const { return this->as<long>(); }
+		operator long long() const { return this->as<long long>(); }
+		operator float() const { return this->as<float>(); }
+		operator double() const { return this->as<double>(); }
+
+		operator unsigned char() const { return this->as<unsigned char>(); }
+		operator unsigned short() const { return this->as<unsigned short>(); }
+		operator unsigned int() const { return this->as<unsigned int>(); }
+		operator unsigned long() const { return this->as<unsigned long>(); }
+		operator unsigned long long() const { return this->as<unsigned long long>(); }
+
+		// false:'0' or 'false', true : others
+		operator bool() const
+		{
+			if (value == "0" || value == "false" || value == "no")
+			{
+				return false;
+			}
+			return true;
+		}
+
+		operator std::string() const
+		{
+			return value;
+		}
+
+		friend std::ostream &operator<<(std::ostream &os, const ValueProxy &proxy)
+		{
+			os << proxy.value;
+			return os;
+		}
+
+		// assignment
+		template <typename T>
+		ValueProxy &operator=(const T &other)
+		{
+			value = this->to_string(value);
+			return *this;
+		}
+		ValueProxy &operator=(const std::string &other)
+		{
+			value = other;
+			return *this;
+		}
+
+		// specify std::string
+		const std::string &String() noexcept
+		{
+			return value;
+		}
+	};
 
 	class section
 	{
@@ -150,15 +251,6 @@ namespace inicpp
 			return _sectionMap[Key].lineNumber;
 		}
 
-		const std::string operator[](const std::string &Key)
-		{
-			if (!_sectionMap.count(Key))
-			{
-				return "";
-			}
-			return _sectionMap[Key].Value;
-		}
-
 		void clear()
 		{
 			_lineNumber = -1;
@@ -171,7 +263,7 @@ namespace inicpp
 			return _sectionMap.empty();
 		}
 
-		int toInt(const std::string &Key)
+		int toInt(const std::string &Key) noexcept
 		{
 			if (!_sectionMap.count(Key))
 			{
@@ -196,7 +288,7 @@ namespace inicpp
 			return result;
 		}
 
-		std::string toString(const std::string &Key)
+		std::string toString(const std::string &Key) noexcept
 		{
 			if (!_sectionMap.count(Key))
 			{
@@ -213,7 +305,7 @@ namespace inicpp
 		}
 #endif
 
-		double toDouble(const std::string &Key)
+		double toDouble(const std::string &Key) noexcept
 		{
 			if (!_sectionMap.count(Key))
 			{
@@ -238,7 +330,15 @@ namespace inicpp
 			return result;
 		}
 
-		// todo : add toString() / toInt() / toDouble()
+		// Automatically converts to any type; throws std::runtime_error if not found or conversion fails
+		ValueProxy operator[](const std::string &Key)
+		{
+			if (!_sectionMap.count(Key))
+			{
+				throw std::runtime_error("Key not found: " + Key);
+			}
+			return ValueProxy(_sectionMap[Key].Value);
+		}
 
 	private:
 		std::string _sectionName;
@@ -442,13 +542,18 @@ namespace inicpp
 		{ // todo: insert comment before k=v
 			parse();
 
-			if (Key == "" || Value == "")
+			std::string key = Key, value = Value;
+
+			trimEdges(key);
+			trimEdges(key);
+
+			if (key == "" || value == "")
 			{
-				INI_DEBUG("Invalid parameter input: Key[" << Key << "],Value[" << Value << "]");
+				INI_DEBUG("Invalid parameter input: key[" << key << "],value[" << value << "]");
 				return false;
 			}
 
-			std::string keyValueData = Key + "=" + Value + "\n";
+			std::string keyValueData = key + "=" + value + "\n";
 			if (comment.length() > 0)
 			{
 				keyValueData = comment + "\n" + keyValueData;
@@ -482,7 +587,7 @@ namespace inicpp
 				// exist key at one section replace it, or need to create it
 				if (_iniData.isSectionExists(Section))
 				{
-					line_number_mark = (*this)[Section].getLine(Key);
+					line_number_mark = (*this)[Section].getLine(key);
 
 					if (line_number_mark == -1)
 					{ // section exist, key not exist
@@ -610,16 +715,37 @@ namespace inicpp
 			return true;
 		}
 
-		bool modify(const std::string &Section, const std::string &Key, const int &Value, const std::string &comment = "")
+		bool modify(const std::string &Section, const std::string &Key, const int Value, const std::string &comment = "")
+		{
+			std::string stringValue = std::to_string(Value);
+			return modify(Section, Key, stringValue, comment);
+		}
+		bool modify(const std::string &Section, const std::string &Key, const double &Value, const std::string &comment = "")
 		{
 			std::string stringValue = std::to_string(Value);
 			return modify(Section, Key, stringValue, comment);
 		}
 
-		bool modify(const std::string &Section, const std::string &Key, const double &Value, const std::string &comment = "")
+		bool modify(const std::string &Section, const std::string &Key, const char& Value, const std::string &comment = "")
+		{
+			std::string stringValue = ValueProxy::to_string(Value);
+			return modify(Section, Key, stringValue, comment);
+		}
+
+		// no sections: head of config file
+		bool modify(const std::string &Key, const std::string &Value)
+		{
+			return modify("", Key, Value, "");
+		}
+		bool modify(const std::string &Key, const char *Value)
+		{
+			return modify("", Key, Value, "");
+		}
+		template <typename T>
+		bool modify(const std::string &Key, const T &Value)
 		{
 			std::string stringValue = std::to_string(Value);
-			return modify(Section, Key, stringValue, comment);
+			return modify("", Key, stringValue, "");
 		}
 
 #ifdef _ENBABLE_INICPP_STD_WSTRING_
@@ -631,10 +757,15 @@ namespace inicpp
 			return modify(Section, Key, stringValue, comment);
 		}
 #endif
-
+		// comment for section name of key
 		bool modifyComment(const std::string &Section, const std::string &Key, const std::string &comment)
 		{
-			return modify(Section, Key, (*this)[Section][Key], comment);
+			return modify(Section, Key, (*this)[Section].toString(Key), comment);
+		}
+		// comment for no section name of key
+		bool modifyComment(const std::string &Key, const std::string &comment)
+		{
+			return modify("", Key, (*this)[""].toString(Key), comment);
 		}
 
 		bool isSectionExists(const std::string &sectionName)
@@ -679,7 +810,7 @@ namespace inicpp
 						   .base(),
 					   data.end());
 
-			INI_DEBUG( "trimEdges data:|" << data << "|");
+			INI_DEBUG("trimEdges data:|" << data << "|");
 		}
 
 	private:
