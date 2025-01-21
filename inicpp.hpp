@@ -2,6 +2,7 @@
  * MIT License
  *
  * Copyright (c) 2023 dujingning <djn2019x@163.com> <https://github.com/dujingning/inicpp.git>
+ * Copyright (c) 2025 Drew Naylor <drewnaylor_apps AT outlook DOT com> <https://github.com/DrewNaylor/inicpp.git>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -444,9 +445,14 @@ namespace inicpp
 	class IniManager
 	{
 	public:
-		explicit IniManager(const std::string &configFileName) : _configFileName(configFileName)
+		// Sometimes you might want to read a file in a read-only
+		// location such as /usr/share/applications, so setting
+		// openFileForWriting to false allows those files to be
+		// read successfully. Before it would just silently fail.
+		// Change made by Drew Naylor. See parse() for more details.
+		explicit IniManager(const std::string &configFileName, const bool &openFileForWriting = true) : _configFileName(configFileName)
 		{
-			parse();
+			parse(openFileForWriting);
 		}
 
 		~IniManager()
@@ -459,9 +465,23 @@ namespace inicpp
 			return _iniData[sectionName];
 		}
 
-		void parse()
+		void parse(const bool &openFileForWriting)
 		{
-			_iniFile.open(_configFileName, std::ifstream::in | std::ifstream::out | std::fstream::app);
+			if (openFileForWriting)
+			{
+				// Setting ifstream::out and fstream::app
+				// will try to open the file to write to it,
+				// which will fail in read-only locations hence
+				// this if/else.
+				// More details on file streams where I learned this:
+				// https://en.cppreference.com/w/cpp/io/basic_ifstream
+				_iniFile.open(_configFileName, std::ifstream::in | std::ifstream::out | std::fstream::app);
+			}
+			else
+			{
+				_iniFile.open(_configFileName, std::ifstream::in);
+			}
+			
 			if (!_iniFile.is_open())
 			{
 				INI_DEBUG("Failed to open the input INI file for parsing!");
@@ -540,7 +560,8 @@ namespace inicpp
 
 		bool modify(const std::string &Section, const std::string &Key, const std::string &Value, const std::string &comment = "")
 		{ // todo: insert comment before k=v
-			parse();
+			// Making an assumption that we want to open this for writing.
+			parse(true);
 
 			std::string key = Key, value = Value;
 
@@ -710,7 +731,8 @@ namespace inicpp
 			std::rename(tempFile.c_str(), _configFileName.c_str());
 
 			// reload
-			parse();
+			// Making an assumption that we want to open this for writing.
+			parse(true);
 
 			return true;
 		}
