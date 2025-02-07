@@ -461,10 +461,22 @@ namespace inicpp
 
 		void parse()
 		{
-			_iniFile.open(_configFileName, std::ifstream::in | std::ifstream::out | std::fstream::app);
 			if (!_iniFile.is_open())
 			{
-				INI_DEBUG("Failed to open the input INI file for parsing!");
+				_iniFile.clear();
+				_iniFile.open(_configFileName, std::ifstream::in | std::ifstream::out | std::fstream::app);
+			}
+
+			if (!_iniFile.is_open())
+			{
+				INI_DEBUG("Failed to open(WR),try to open with readonly(R).");
+				_iniFile.clear();
+				_iniFile.open(_configFileName, std::ifstream::in);
+			}
+
+			if (!_iniFile.is_open())
+			{
+				INI_DEBUG("Failed to open the input INI file for parsing! file:" << _configFileName);
 				return;
 			}
 
@@ -564,18 +576,18 @@ namespace inicpp
 			}
 
 			const std::string &tempFile = ".temp.ini";
-			std::fstream input(_configFileName, std::ifstream::in | std::ifstream::out | std::fstream::app);
+			std::fstream input(_configFileName, std::ifstream::in);
 			std::ofstream output(tempFile);
 
 			if (!input.is_open())
 			{
-				INI_DEBUG("Failed to open the input INI file for modification!");
+				INI_DEBUG("Failed to open the input INI file for modification! File name:" << _configFileName);
 				return false;
 			}
 
 			if (!output.is_open())
 			{
-				INI_DEBUG("Failed to open the input INI file for modification!");
+				INI_DEBUG("Failed to open the output INI file for modification!");
 				return false;
 			}
 
@@ -726,7 +738,7 @@ namespace inicpp
 			return modify(Section, Key, stringValue, comment);
 		}
 
-		bool modify(const std::string &Section, const std::string &Key, const char& Value, const std::string &comment = "")
+		bool modify(const std::string &Section, const std::string &Key, const char &Value, const std::string &comment = "")
 		{
 			std::string stringValue = ValueProxy::to_string(Value);
 			return modify(Section, Key, stringValue, comment);
@@ -810,7 +822,7 @@ namespace inicpp
 						   .base(),
 					   data.end());
 
-			INI_DEBUG("trimEdges data:|" << data << "|");
+			// INI_DEBUG("trimEdges data:|" << data << "|");
 		}
 
 	private:
