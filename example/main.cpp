@@ -111,7 +111,7 @@ void readExample()
 
 	// - Not throw exceptions
 	PI_s = _ini["math"].toString("PI");
-	PI_dd = _ini["math"].toDouble("PI");
+	PI_d = _ini["math"].toDouble("PI");
 	PI_i = _ini["math"].toInt("PI");
 
 	// - Bind to Struct
