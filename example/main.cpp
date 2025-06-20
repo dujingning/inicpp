@@ -11,15 +11,24 @@ void readExample();
 class appConfig
 {
 public:
+	typedef struct Server
+	{
+		std::string ip;
+		unsigned short port;
+		bool isKeepalived;
+	} Server;
+
+	static const Server readServer(inicpp::IniManager &_ini)
+	{
+		return Server{
+			ip : _ini["server"]["ip"],
+			port : _ini["server"]["port"],
+			isKeepalived : _ini["server"]["isKeepalived"]
+		};
+	}
+
 	typedef struct Config
 	{
-		typedef struct Server
-		{
-			std::string ip;
-			unsigned short port;
-			bool isKeepalived;
-		} Server;
-
 		std::string title;
 		Server server;
 		double PI;
@@ -31,16 +40,24 @@ public:
 
 		return Config{
 			title : _ini[""]["title"],
-			server : {ip : _ini["server"]["ip"],
-					  port : _ini["server"]["port"],
-					  isKeepalived : _ini["server"]["isKeepalived"]},
+			server : readServer(_ini),
 			PI : _ini["math"]["PI"],
 		};
+	}
+
+	static void print(Config &config)
+	{
+		std::cout
+			<< "title:       \t" << config.title << std::endl
+			<< "server.port: \t" << config.server.port << std::endl
+			<< "server.ip:   \t" << config.server.ip << std::endl
+			<< "server.alive:\t" << config.server.isKeepalived << std::endl
+			<< "math.PI:     \t" << std::setprecision(20) << config.PI << std::endl;
 	}
 };
 
 /**
-  compile: g++ -I../ -std=c++11 main.cpp -o iniExample
+ compile: g++ -I../ -std=c++11 main.cpp -o iniExample
 */
 int main()
 {
@@ -50,11 +67,7 @@ int main()
 
 	/** Bind to Struct */
 	appConfig::Config config = appConfig::readConfig();
-	std::cout << "title:      \t" << config.title << std::endl;
-	std::cout << "server.port:\t" << config.server.port << std::endl;
-	std::cout << "server.ip:  \t" << config.server.ip << std::endl;
-	std::cout << "server.alive:\t" << config.server.isKeepalived << std::endl;
-	std::cout << "math.PI:    \t" << std::setprecision(20) << config.PI << std::endl;
+	appConfig::print(config);
 
 	return 0;
 }
@@ -64,17 +77,16 @@ void writeExample()
 	inicpp::IniManager _ini(CONFIG_FILE);
 
 	/** write to file. */
-	_ini.modify("server", "isKeepalived", "true");
-	_ini.modify("server", "port", "8080");
-	_ini.modify("server", "ip", "127.0.0.1");
-	_ini.modify("math", "PI", "3.141592653589793238462643383279502884", "Comment: This is pi in mathematics."); // with a comment.
+	_ini.set("server", "isKeepalived", "true");
+	_ini.set("server", "port", "8080");
+	_ini.set("server", "ip", "127.0.0.1");
 
-	// - add the comment later.
-	_ini.modifyComment("server", "port", "this is the listen ip for server.");
+	// comment
+	_ini.set("math", "PI", "3.141592653589793238462643383279502884", "Comment: This is pi in mathematics."); // with a comment.
+	_ini.setComment("server", "port", "this is the listen ip for server."); // comment to section->key
 
-	_ini.modify("title", "config.ini"); // no need sections
-	_ini.modifyComment("", "title", "This is the title."); // add comment
-
+	_ini.set("title", "config.ini"); // no need sections
+	_ini.setComment("title", "This is the title."); // add comment for none section key
 }
 
 /**

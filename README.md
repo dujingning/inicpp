@@ -42,7 +42,7 @@ int main()
 ```
 
 #### 2.write example
-Write: Modify directly to the file.
+Write: Set directly to the file.
 ```cpp
 #include "inicpp.hpp"
 #include <iostream>
@@ -51,8 +51,8 @@ int main()
 {
     inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
 
-    _ini.modify("server","ip","192.168.3.35");
-    _ini.modify("server","port",554);
+    _ini.set("server","ip","192.168.3.35");
+    _ini.set("server","port",554);
     std::cout << _ini["server"]["port"] << std::endl;
 }
 ```
@@ -66,7 +66,7 @@ int main()
 {
     inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
     // comment section/key
-    _ini.modifyComment("server", "port", "this is the listen ip for server.");
+    _ini.setComment("server", "port", "this is the listen ip for server.");
 }
 ```
 #### 4.toString()、toInt()、toDouble()
@@ -78,7 +78,7 @@ Convert: From string to type (No exception).
 int main()
 {
     inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
-    _ini.modify("server","port","554","this is the listen port for server");
+    _ini.set("server","port","554","this is the listen port for server");
     std::cout << _ini["server"]["port"] << std::endl;
 
     // Convert to string, default is string

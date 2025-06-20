@@ -96,18 +96,6 @@ namespace inicpp
 			return oss.str();
 		}
 
-		// template <typename T>
-		// operator T() const
-		// {
-		// 	static_assert(!std::is_pointer<T>::value, "Pointer types are not supported for conversion.");
-		// 	std::istringstream iss(value);
-		// 	T result;
-		// 	if (!(iss >> result))
-		// 	{
-		// 		throw std::runtime_error("Type mismatch or invalid conversion.");
-		// 	}
-		// 	return result;
-		// }
 		template <typename T>
 		T as() const
 		{
@@ -440,7 +428,6 @@ namespace inicpp
 		std::map<std::string /*Section Name*/, section> _iniInfoMap;
 	};
 
-	// todo if file is modified,never write back
 	class IniManager
 	{
 	public:
@@ -550,8 +537,8 @@ namespace inicpp
 			}
 		}
 
-		bool modify(const std::string &Section, const std::string &Key, const std::string &Value, const std::string &comment = "")
-		{ // todo: insert comment before k=v
+		bool set(const std::string &Section, const std::string &Key, const std::string &Value, const std::string &comment = "")
+		{
 			parse();
 
 			std::string key = Key, value = Value;
@@ -709,7 +696,7 @@ namespace inicpp
 					break;
 				}
 
-				INI_DEBUG("error! inicpp lost process of modify function");
+				INI_DEBUG("error! inicpp lost process of set function");
 				return false;
 
 			} while (false);
@@ -727,57 +714,57 @@ namespace inicpp
 			return true;
 		}
 
-		bool modify(const std::string &Section, const std::string &Key, const int Value, const std::string &comment = "")
+		bool set(const std::string &Section, const std::string &Key, const int Value, const std::string &comment = "")
 		{
 			std::string stringValue = std::to_string(Value);
-			return modify(Section, Key, stringValue, comment);
+			return set(Section, Key, stringValue, comment);
 		}
-		bool modify(const std::string &Section, const std::string &Key, const double &Value, const std::string &comment = "")
+		bool set(const std::string &Section, const std::string &Key, const double &Value, const std::string &comment = "")
 		{
 			std::string stringValue = std::to_string(Value);
-			return modify(Section, Key, stringValue, comment);
+			return set(Section, Key, stringValue, comment);
 		}
 
-		bool modify(const std::string &Section, const std::string &Key, const char &Value, const std::string &comment = "")
+		bool set(const std::string &Section, const std::string &Key, const char &Value, const std::string &comment = "")
 		{
 			std::string stringValue = ValueProxy::to_string(Value);
-			return modify(Section, Key, stringValue, comment);
+			return set(Section, Key, stringValue, comment);
 		}
 
 		// no sections: head of config file
-		bool modify(const std::string &Key, const std::string &Value)
+		bool set(const std::string &Key, const std::string &Value)
 		{
-			return modify("", Key, Value, "");
+			return set("", Key, Value, "");
 		}
-		bool modify(const std::string &Key, const char *Value)
+		bool set(const std::string &Key, const char *Value)
 		{
-			return modify("", Key, Value, "");
+			return set("", Key, Value, "");
 		}
 		template <typename T>
-		bool modify(const std::string &Key, const T &Value)
+		bool set(const std::string &Key, const T &Value)
 		{
 			std::string stringValue = std::to_string(Value);
-			return modify("", Key, stringValue, "");
+			return set("", Key, stringValue, "");
 		}
 
 #ifdef _ENBABLE_INICPP_STD_WSTRING_
-		bool modify(const std::string &Section, const std::string &Key, const std::wstring &Value, const std::string &comment = "")
+		bool set(const std::string &Section, const std::string &Key, const std::wstring &Value, const std::string &comment = "")
 		{
 			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 			std::string stringValue = converter.to_bytes(Value);
 
-			return modify(Section, Key, stringValue, comment);
+			return set(Section, Key, stringValue, comment);
 		}
 #endif
 		// comment for section name of key
-		bool modifyComment(const std::string &Section, const std::string &Key, const std::string &comment)
+		bool setComment(const std::string &Section, const std::string &Key, const std::string &comment)
 		{
-			return modify(Section, Key, (*this)[Section].toString(Key), comment);
+			return set(Section, Key, (*this)[Section].toString(Key), comment);
 		}
 		// comment for no section name of key
-		bool modifyComment(const std::string &Key, const std::string &comment)
+		bool setComment(const std::string &Key, const std::string &comment)
 		{
-			return modify("", Key, (*this)[""].toString(Key), comment);
+			return set("", Key, (*this)[""].toString(Key), comment);
 		}
 
 		bool isSectionExists(const std::string &sectionName)
