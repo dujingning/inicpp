@@ -1,7 +1,7 @@
 ### Ⅰ、Project
 You can view the project at [https://github.com/dujingning/inicpp.git](https://github.com/dujingning/inicpp.git) or [https://gitee.com/dujingning/inicpp](https://gitee.com/dujingning/inicpp).
 
-#### * To support open source, please give us a star. Thank you very much!
+#### * To support open source, please give us a star. For any issues, feel free to open an issue. Thank you very much!
 
 
 ---
@@ -24,8 +24,31 @@ git clone https://github.com/dujingning/inicpp.git
 
 Include `inicpp.hpp`, declare the `inicpp::IniManager` class, and you're all set.
 
-#### 1.read example
-Read: easy to use.
+
+#### 1.write example
+Write: Set directly to the file.
+```cpp
+#include "inicpp.hpp"
+#include <iostream>
+
+int main()
+{
+    inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
+
+    _ini["server"]["ip"] = "192.168.3.35";
+    _ini["server"]["port"] = 554;
+    std::cout << _ini["server"]["ip"] << ":"<< _ini["server"]["port"] << std::endl;
+
+    // or set any
+    _ini.set("server","ip","127.0.0.1");
+    _ini.set("server","port",8080);
+    std::cout << _ini["server"]["ip"] << ":"<< _ini["server"]["port"] << std::endl;
+}
+```
+
+
+#### 2.read example
+Convert: From string to type (**Exception for error**).
 ```cpp
 #include "inicpp.hpp"
 #include <iostream>
@@ -36,26 +59,16 @@ int main()
 
     int         port = _ini["server"]["port"];
     std::string ip   = _ini["server"]["ip"];
+    std::cout << ip << ":"<< port << std::endl;
 
-    std::cout << ip << ":" << port << std::endl;
+    // or get any
+    ip   = _ini["server"]["ip"].get<std::string>();
+    port = _ini["server"]["port"].get<int>();
+    std::cout << ip << ":"<< port << std::endl;
 }
 ```
 
-#### 2.write example
-Write: Set directly to the file.
-```cpp
-#include "inicpp.hpp"
-#include <iostream>
 
-int main()
-{
-    inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
-
-    _ini.set("server","ip","192.168.3.35");
-    _ini.set("server","port",554);
-    std::cout << _ini["server"]["port"] << std::endl;
-}
-```
 #### 3.comment example
 Comment: Write comments for key-value pairs.
 ```cpp
@@ -65,12 +78,16 @@ Comment: Write comments for key-value pairs.
 int main()
 {
     inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
+
     // comment section/key
-    _ini.setComment("server", "port", "this is the listen ip for server.");
+    _ini.set("math"/*section*/, "PI"/*key*/, "3.1415926535897932"/*key*/, "This is PI in mathematics."/*comment*/);
+    _ini.setComment("server"/*section*/, "port"/*key*/, "this is the listen ip for server."/*comment*/);
 }
 ```
+
+
 #### 4.toString()、toInt()、toDouble()
-Convert: From string to type (No exception).
+Convert: From string to type (**No exception for error**).
 ```cpp
 #include "inicpp.hpp"
 #include <iostream>
@@ -94,6 +111,8 @@ int main()
     std::cout << "to int:\t\tserver.port = " << http_port_i << std::endl;
 }
 ```
+
+
 #### 5.isKeyExists()、isSectionExists()、getSectionsList()
 May contain unnamed sections: when keys are at the head of the file.
 ```bash
@@ -125,6 +144,7 @@ int main()
 }
 ```
 
+
 #### 6.Super Easy Binding to Your Data Structures (Read).
 
 config.ini :
@@ -152,46 +172,43 @@ config.cpp
 class appConfig
 {
 public:
-	typedef struct Config
-	{
-		typedef struct Server
-		{
-			std::string ip;
-			unsigned short port;
-			bool isKeepalived;
-		} Server;
+    typedef struct Config
+    {
+        typedef struct Server
+        {
+            std::string ip;
+            unsigned short port;
+            bool isKeepalived;
+        } Server;
 
-		std::string title;
-		Server server;
-		double PI;
-	} Config;
+        std::string title;
+        Server server;
+        double PI;
+    } Config;
 
-	static const Config readConfig()
-	{
-		inicpp::IniManager _ini(CONFIG_FILE);
+    static const Config readConfig()
+    {
+        inicpp::IniManager _ini(CONFIG_FILE);
 
-		return Config{
-			title : _ini[""]["title"],
-			server : {ip : _ini["server"]["ip"],
-					  port : _ini["server"]["port"],
-					  isKeepalived : _ini["server"]["isKeepalived"]},
-			PI : _ini["math"]["PI"],
-		};
-	}
+        return Config{
+            title : _ini[""]["title"],
+            server : {ip : _ini["server"]["ip"],
+                        port : _ini["server"]["port"],
+                        isKeepalived : _ini["server"]["isKeepalived"]},
+            PI : _ini["math"]["PI"],
+        };
+    }
 };
 
 int main()
 {
-	/** easy read for app as struct */
-	appConfig::Config config = appConfig::readConfig();
-	std::cout << "title:      \t" << config.title << std::endl;
-	std::cout << "server.port:\t" << config.server.port << std::endl;
-	std::cout << "server.ip:  \t" << config.server.ip << std::endl;
-	std::cout << "server.alive:\t" << config.server.isKeepalived << std::endl;
-	std::cout << "math.PI:    \t" << std::setprecision(20) << config.PI << std::endl;
-	return 0;
+    /** easy read for app as struct */
+    appConfig::Config config = appConfig::readConfig();
+
+    return 0;
 }
 ```
+
 
 #### 7.how to use example/main.cpp
 You can compile it using `example/Makefile` or any other method you prefer.
@@ -249,7 +266,8 @@ PI=3.141592653589793238462643383279502884
 </a>
 
 ---
-### Ⅴ、End
- The project was created by DuJingning.
 
+
+### Ⅴ、End
+ The project was created by **DuJingning**.
 

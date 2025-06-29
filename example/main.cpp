@@ -3,71 +3,71 @@
 #include <iostream>
 #include <iomanip>
 
+// ANSI escape code for green text
+#define GREEN_TEXT "\033[1;32m"
+#define RESET_COLOR "\033[0m"
+
 #define CONFIG_FILE "config.ini"
 
 void writeExample();
 void readExample();
+void sectionsList();
 
-class appConfig
+namespace Configer
 {
-public:
 	typedef struct Server
 	{
+		static const Server Load(inicpp::IniManager &_ini)
+		{
+			return Server{
+				ip : _ini["server"]["ip"],
+				port : _ini["server"]["port"],
+				isKeepalived : _ini["server"]["keepalived"]
+			};
+		}
+
 		std::string ip;
 		unsigned short port;
 		bool isKeepalived;
 	} Server;
 
-	static const Server readServer(inicpp::IniManager &_ini)
-	{
-		return Server{
-			ip : _ini["server"]["ip"],
-			port : _ini["server"]["port"],
-			isKeepalived : _ini["server"]["isKeepalived"]
-		};
-	}
-
 	typedef struct Config
 	{
+		static const Config Load()
+		{
+			inicpp::IniManager _ini(CONFIG_FILE);
+
+			return Config{
+				title : _ini[""]["title"],
+				server : Server::Load(_ini),
+				PI : _ini["math"]["PI"],
+			};
+		}
+
 		std::string title;
 		Server server;
 		double PI;
 	} Config;
 
-	static const Config readConfig()
+	const Config Load()
 	{
-		inicpp::IniManager _ini(CONFIG_FILE);
-
-		return Config{
-			title : _ini[""]["title"],
-			server : readServer(_ini),
-			PI : _ini["math"]["PI"],
-		};
+		return Config::Load();
 	}
+}
 
-	static void print(Config &config)
-	{
-		std::cout
-			<< "title:       \t" << config.title << std::endl
-			<< "server.port: \t" << config.server.port << std::endl
-			<< "server.ip:   \t" << config.server.ip << std::endl
-			<< "server.alive:\t" << config.server.isKeepalived << std::endl
-			<< "math.PI:     \t" << std::setprecision(20) << config.PI << std::endl;
-	}
-};
-
-/**
- compile: g++ -I../ -std=c++11 main.cpp -o iniExample
-*/
+/** compile: g++ -I../ -std=c++11 main.cpp -o iniExample */
 int main()
 {
+
 	/** write and read example */
 	writeExample();
 	readExample();
+	sectionsList();
 
 	/** Bind to Struct */
-	appConfig::Config config = appConfig::readConfig();
-	appConfig::print(config);
+	Configer::Config config = Configer::Load();
+	// use 'config' you want
+	// ...
 
 	return 0;
 }
@@ -77,15 +77,20 @@ void writeExample()
 	inicpp::IniManager _ini(CONFIG_FILE);
 
 	/** write to file. */
-	_ini.set("server", "isKeepalived", "true");
-	_ini.set("server", "port", "8080");
+	// assignment
+	_ini["server"]["number"] = 1;
+	_ini["server"]["info"] = "the server socket info.";
+	// or function
+	_ini.set("server", "keepalived", "true");
+	_ini.set("server", "port", 8080);
 	_ini.set("server", "ip", "127.0.0.1");
 
-	// comment
+	// set with comment
 	_ini.set("math", "PI", "3.141592653589793238462643383279502884", "Comment: This is pi in mathematics."); // with a comment.
-	_ini.setComment("server", "port", "this is the listen ip for server."); // comment to section->key
+	_ini.setComment("server", "port", "this is the listen ip for server.");									 // comment to section->key
 
-	_ini.set("title", "config.ini"); // no need sections
+	// none section
+	_ini.set("title", "config.ini");
 	_ini.setComment("title", "This is the title."); // add comment for none section key
 }
 
@@ -106,7 +111,7 @@ void readExample()
 	std::string PI_s = _ini["math"]["PI"];
 	PI_s = _ini["math"]["PI"].operator std::string();
 	PI_s = _ini["math"]["PI"].String();
-	PI_s = _ini["math"]["PI"].as<std::string>();
+	PI_s = _ini["math"]["PI"].get<std::string>();
 	// - Convert to double.
 	double PI_d = _ini["math"]["PI"];
 	// - Convert to int.
@@ -116,8 +121,8 @@ void readExample()
 	float PI_f = _ini["math"]["PI"];
 	short PI_si = _ini["math"]["PI"];
 	char PI_c = _ini["math"]["PI"];
-	// - Diy, any you want
-	long long PI_ll = _ini["math"]["PI"].as<long long>();
+	// - DIY, any type you want
+	long long PI_ll = _ini["math"]["PI"].get<long long>();
 
 	PI_c = _ini["math"]["PI"];
 
@@ -127,5 +132,26 @@ void readExample()
 	PI_i = _ini["math"].toInt("PI");
 
 	// - Bind to Struct
-	appConfig::Config config = appConfig::readConfig();
+	Configer::Config config = Configer::Load();
+}
+
+void sectionsList()
+{
+	inicpp::IniManager _ini;
+
+	// set config file and parse
+	_ini.setFileName(CONFIG_FILE);
+	_ini.parse();
+
+	for (auto &sectionName : _ini.sectionsList())
+	{
+		std::cout << GREEN_TEXT << "\nSection: " << RESET_COLOR << sectionName << "\n";
+
+		for (auto &kv : _ini.sectionMap(sectionName))
+		{
+			std::cout << std::setw(10) << std::left << kv.first
+					  << " -------> "
+					  << kv.second << std::endl;
+		}
+	}
 }

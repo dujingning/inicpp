@@ -61,7 +61,7 @@ public:
 	}
 };
 
-#define CODE_INFO std::string(" | Code:\'file:") + std::string(__FILE__) + ",function:" + std::string(__FUNCTION__) + ",line:" + std::to_string(__LINE__) + '\''
+#define CODE_INFO std::string(" \t``````|") + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "  fun:" + std::string(__FUNCTION__)
 #define INI_DEBUG(x) std::cout << "INICPP " << TimeFormatter::format() << " : " << x << CODE_INFO << std::endl
 
 #else // #ifdef INICPP_DEBUG
@@ -71,22 +71,38 @@ public:
 namespace inicpp
 {
 
-	typedef struct KeyValueNode
+	typedef struct ValueNode
 	{
 		std::string Value = "";
 		int lineNumber = -1; // text line start with 1
-	} KeyValueNode;
+	} ValueNode;
+
+	class parentHelper
+	{
+	public:
+		virtual parentHelper *parent()
+		{
+			INI_DEBUG("called parentHelper virtual impl: need to impl parent");
+		};
+		virtual void setParent(parentHelper *parent)
+		{
+			INI_DEBUG("called parentHelper virtual impl: need to impl setParent");
+		};
+		virtual bool set(const std::string &Section, const std::string &Key, const std::string &Value, const std::string &comment = "")
+		{
+			INI_DEBUG("called parentHelper virtual impl: need to impl set");
+			return true;
+		};
+	};
 
 	class ValueProxy
 	{
-	private:
-		std::string &value;
-
 	public:
-		ValueProxy(std::string &value) : value(value) {}
+		ValueProxy(std::string &value) : _value(value) {}
+		~ValueProxy() {}
 
 		template <typename T>
-		ValueProxy(const T &value) : value(to_string(value)) {}
+		ValueProxy(const T &value) : _value(to_string(value)) {}
 
 		template <typename T>
 		static std::string to_string(const T &value)
@@ -97,36 +113,36 @@ namespace inicpp
 		}
 
 		template <typename T>
-		T as() const
+		T get() const
 		{
 			static_assert(!std::is_pointer<T>::value, "Pointer types are not supported for conversion.");
-			std::istringstream iss(value);
+			std::istringstream iss(_value);
 			T result;
 			if (!(iss >> result))
 			{
-				throw std::runtime_error("Type mismatch or invalid conversion.");
+				throw std::runtime_error("Type mismatch or invalid conversion. with(section-key-value): "  +_sectionName +"-"+ _keyName +"-"+ _value); // error notify
 			}
 			return result;
 		}
 
-		operator char() const { return this->as<char>(); }
-		operator short() const { return this->as<short>(); }
-		operator int() const { return this->as<int>(); }
-		operator long() const { return this->as<long>(); }
-		operator long long() const { return this->as<long long>(); }
-		operator float() const { return this->as<float>(); }
-		operator double() const { return this->as<double>(); }
+		operator char() const { return this->get<char>(); }
+		operator short() const { return this->get<short>(); }
+		operator int() const { return this->get<int>(); }
+		operator long() const { return this->get<long>(); }
+		operator long long() const { return this->get<long long>(); }
+		operator float() const { return this->get<float>(); }
+		operator double() const { return this->get<double>(); }
 
-		operator unsigned char() const { return this->as<unsigned char>(); }
-		operator unsigned short() const { return this->as<unsigned short>(); }
-		operator unsigned int() const { return this->as<unsigned int>(); }
-		operator unsigned long() const { return this->as<unsigned long>(); }
-		operator unsigned long long() const { return this->as<unsigned long long>(); }
+		operator unsigned char() const { return this->get<unsigned char>(); }
+		operator unsigned short() const { return this->get<unsigned short>(); }
+		operator unsigned int() const { return this->get<unsigned int>(); }
+		operator unsigned long() const { return this->get<unsigned long>(); }
+		operator unsigned long long() const { return this->get<unsigned long long>(); }
 
 		// false:'0' or 'false', true : others
 		operator bool() const
 		{
-			if (value == "0" || value == "false" || value == "no")
+			if (_value == "0" || _value == "false" || _value == "no")
 			{
 				return false;
 			}
@@ -135,12 +151,12 @@ namespace inicpp
 
 		operator std::string() const
 		{
-			return value;
+			return _value;
 		}
 
 		friend std::ostream &operator<<(std::ostream &os, const ValueProxy &proxy)
 		{
-			os << proxy.value;
+			os << proxy._value;
 			return os;
 		}
 
@@ -148,23 +164,67 @@ namespace inicpp
 		template <typename T>
 		ValueProxy &operator=(const T &other)
 		{
-			value = this->to_string(value);
+			std::string value = this->to_string(other);
+
+			if (_value != value)
+			{
+				set(value);
+			}
+
+			_value = value;
 			return *this;
 		}
+
 		ValueProxy &operator=(const std::string &other)
 		{
-			value = other;
+			if (_value != other)
+			{
+				INI_DEBUG("Value Proxy Wanna Set Value: " << other);
+				set(other);
+			}
+
+			_value = other;
 			return *this;
 		}
 
 		// specify std::string
 		const std::string &String() noexcept
 		{
-			return value;
+			return _value;
 		}
-	};
 
-	class section
+		inline void setWriteCB(parentHelper *sectionObj, const std::string &sectionName, const std::string &keyName)
+		{
+			_section = sectionObj;
+			_sectionName = sectionName;
+			_keyName = keyName;
+		}
+
+	private:
+		void set(const std::string &value)
+		{
+			if (value.empty() || _keyName.empty())
+			{
+				return;
+			}
+			if (_section && _section->parent() && _section->parent()->parent())
+			{
+				_section->parent()->parent()->set(_sectionName, _keyName, value);
+			}
+		}
+
+	private:
+		std::string &_value;
+
+		std::string _sectionName, _keyName;
+		parentHelper *_section = nullptr;
+	};
+} // namespace inicpp
+
+namespace inicpp
+{
+
+	class section : parentHelper
 	{
 	public:
 		section() : _sectionName()
@@ -318,23 +378,40 @@ namespace inicpp
 			return result;
 		}
 
+		std::map<std::string /*Key*/, std::string /*Value*/> getSectionMap()
+		{
+			std::map<std::string /*Key*/, std::string /*Value*/> sectionKVMap;
+
+			for (auto &iter : _sectionMap)
+			{
+				sectionKVMap[iter.first] = iter.second.Value;
+			}
+
+			return sectionKVMap;
+		}
+
 		// Automatically converts to any type; throws std::runtime_error if not found or conversion fails
 		ValueProxy operator[](const std::string &Key)
 		{
-			if (!_sectionMap.count(Key))
-			{
-				throw std::runtime_error("Key not found: " + Key);
-			}
-			return ValueProxy(_sectionMap[Key].Value);
+			ValueProxy vp(_sectionMap[Key].Value);
+
+			vp.setWriteCB(this, _sectionName, Key);
+
+			return vp;
 		}
+
+		inline parentHelper *parent() override { return _parent; };
+		inline void setParent(parentHelper *parent) override { _parent = parent; };
 
 	private:
 		std::string _sectionName;
-		std::map<std::string, KeyValueNode> _sectionMap;
+		std::map<std::string /*Key*/, ValueNode> _sectionMap;
 		int _lineNumber = -1; // text line start with 1
+
+		parentHelper *_parent = nullptr;
 	};
 
-	class ini
+	class ini : parentHelper
 	{
 	public:
 		void addSection(section &sec)
@@ -378,12 +455,25 @@ namespace inicpp
 			return sectionList;
 		}
 
+		std::map<std::string /*key*/, std::string /*value*/> getSectionMap(const std::string &sectionName)
+		{
+			std::map<std::string /*key*/, std::string /*value*/> kvMap;
+			if (_iniInfoMap.count(sectionName) == 0)
+			{
+				return kvMap;
+			}
+			return _iniInfoMap[sectionName].getSectionMap();
+		}
+
 		const section &operator[](const std::string &sectionName)
 		{
-			if (!_iniInfoMap.count(sectionName))
+			_iniInfoMap[sectionName].setParent(this);
+
+			if (_iniInfoMap[sectionName].name().empty())
 			{
-				return _iniInfoMap[""];
+				_iniInfoMap[sectionName].setName(sectionName, -1);
 			}
+
 			return _iniInfoMap[sectionName];
 		}
 
@@ -424,15 +514,23 @@ namespace inicpp
 		inline void clear() { _iniInfoMap.clear(); }
 		inline bool empty() { return _iniInfoMap.empty(); }
 
+		parentHelper *parent() override { return _parent; }
+		void setParent(parentHelper *parent) override { _parent = parent; }
+
 	protected:
 		std::map<std::string /*Section Name*/, section> _iniInfoMap;
+
+	private:
+		parentHelper *_parent = nullptr;
 	};
 
-	class IniManager
+	class IniManager : parentHelper
 	{
 	public:
-		explicit IniManager(const std::string &configFileName) : _configFileName(configFileName)
+		explicit IniManager(const std::string &configFileName = "") : _configFileName(configFileName)
 		{
+			_iniData.setParent(this);
+
 			parse();
 		}
 
@@ -448,6 +546,11 @@ namespace inicpp
 
 		void parse()
 		{
+			if (_configFileName.empty())
+			{
+				return;
+			}
+
 			if (!_iniFile.is_open())
 			{
 				_iniFile.clear();
@@ -537,7 +640,7 @@ namespace inicpp
 			}
 		}
 
-		bool set(const std::string &Section, const std::string &Key, const std::string &Value, const std::string &comment = "")
+		bool set(const std::string &Section, const std::string &Key, const std::string &Value, const std::string &comment = "") override
 		{
 			parse();
 
@@ -719,6 +822,7 @@ namespace inicpp
 			std::string stringValue = std::to_string(Value);
 			return set(Section, Key, stringValue, comment);
 		}
+
 		bool set(const std::string &Section, const std::string &Key, const double &Value, const std::string &comment = "")
 		{
 			std::string stringValue = std::to_string(Value);
@@ -772,9 +876,19 @@ namespace inicpp
 			return _iniData.isSectionExists(sectionName);
 		}
 
-		inline std::list<std::string> getSectionsList()
+		inline std::list<std::string /*section name*/> sectionsList()
 		{
 			return _iniData.getSectionsList();
+		}
+
+		inline std::map<std::string /*key*/, std::string /*value*/> sectionMap(const std::string &sectionName)
+		{
+			return _iniData.getSectionMap(sectionName);
+		}
+
+		void setFileName(const std::string &fileName)
+		{
+			_configFileName = fileName;
 		}
 
 	private:
@@ -819,6 +933,6 @@ namespace inicpp
 		std::string _configFileName;
 	};
 
-}
+} // namespace inicpp
 
 #endif
