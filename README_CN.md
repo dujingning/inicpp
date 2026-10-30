@@ -1,12 +1,43 @@
+<div align="center">
+
+# inicpp
+
+**面向 Modern C++ 的 INI 文件处理库：简单、方便、直观**
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![C++11](https://img.shields.io/badge/C%2B%2B-11%20or%20later-00599C.svg?logo=c%2B%2B&logoColor=white)](#0-安装)
+[![Header only](https://img.shields.io/badge/header--only-1%20file-success.svg)](inicpp.hpp)
+[![GitHub stars](https://img.shields.io/github/stars/dujingning/inicpp?style=flat&logo=github)](https://github.com/dujingning/inicpp/stargazers)
+
 [English](README.md) | **简体中文**
 
-### 这个 C++ 库用于什么？
+[快速开始](#快速开始) · [用法](#ⅲ用法) · [语法](#支持的-ini-语法) · [测试](#ⅳ测试) · [Gitee 镜像](https://gitee.com/dujingning/inicpp)
+
+</div>
 
 > 1. 让 INI 文件处理保持**简单**、**方便**、**直观**。
-
 > 2. 通过协作创新推进 **C++** 的长期价值。
-
 > 3. 让 C++ 保持**简单**、**易用**、**自由**。
+
+---
+
+### 快速开始
+
+把 `inicpp.hpp` 放进项目即可使用：
+
+```cpp
+#include "inicpp.hpp"
+#include <iostream>
+
+int main()
+{
+    inicpp::IniManager ini("config.ini");   // 加载并解析（文件可以暂不存在）
+
+    ini["server"]["port"] = 8080;           // 写入（立即保存到文件）
+    int port = ini["server"]["port"];       // 读取
+    std::cout << port << std::endl;
+}
+```
 
 ---
 
@@ -17,7 +48,7 @@
 - GitHub: [https://github.com/dujingning/inicpp.git](https://github.com/dujingning/inicpp.git)
 - Gitee: [https://gitee.com/dujingning/inicpp](https://gitee.com/dujingning/inicpp)
 
-#### * 如果这个项目对你有帮助，欢迎点一个 star。遇到问题也欢迎提交 issue。
+如果这个项目对你有帮助，欢迎点一个 ⭐ star。遇到问题也欢迎提交 issue 或 PR。
 
 ---
 
@@ -34,22 +65,6 @@ inicpp 是一个面向 Modern C++ 的 INI 单头文件库，支持**读取**、*
 - **读 / 写 / 注释**：可将值和注释写回文件，并保留已有注释和换行风格。
 - **写入安全**：更新通过 backup 替换流程完成；延迟写入可批量修改，并由调用者处理写入失败。
 - **错误行为明确**：转换操作抛出 `std::runtime_error`；`toString()` / `toInt()` / `toDouble()` 永不抛异常。
-
-#### 快速开始
-
-```cpp
-#include "inicpp.hpp"
-#include <iostream>
-
-int main()
-{
-    inicpp::IniManager ini("config.ini");   // 加载并解析（文件可以暂不存在）
-
-    ini["server"]["port"] = 8080;           // 写入（立即保存到文件）
-    int port = ini["server"]["port"];       // 读取
-    std::cout << port << std::endl;
-}
-```
 
 #### API 速查
 

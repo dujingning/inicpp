@@ -1,20 +1,50 @@
+<div align="center">
+
+# inicpp
+
+**Simple, convenient and intuitive INI file handling for Modern C++**
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![C++11](https://img.shields.io/badge/C%2B%2B-11%20or%20later-00599C.svg?logo=c%2B%2B&logoColor=white)](#0installation)
+[![Header only](https://img.shields.io/badge/header--only-1%20file-success.svg)](inicpp.hpp)
+[![GitHub stars](https://img.shields.io/github/stars/dujingning/inicpp?style=flat&logo=github)](https://github.com/dujingning/inicpp/stargazers)
+
 **English** | [简体中文](README_CN.md)
 
-### What is this C++ library for?
+[Quick start](#quick-start) · [Usage](#ⅲusage) · [Syntax](#supported-ini-syntax) · [Testing](#ⅳtesting) · [Gitee mirror](https://gitee.com/dujingning/inicpp)
 
-> 🔥 1.Aims to make INI file processing **simple**, **convenient**, and **intuitive**.
+</div>
 
-> 🔥 2.Advancing the enduring excellence of **C++** through collaborative innovation.
+> 1. Make INI file processing **simple**, **convenient**, and **intuitive**.
+> 2. Advance the enduring excellence of **C++** through collaborative innovation.
+> 3. Let C++ stay **simple**, **easy** and **free**.
 
-> 🔥 3.Let C++ keep **simple**,**easy** and **free**.
+---
+
+### Quick start
+
+Drop `inicpp.hpp` into your project and you are done:
+
+```cpp
+#include "inicpp.hpp"
+#include <iostream>
+
+int main()
+{
+    inicpp::IniManager ini("config.ini");   // load and parse (the file may not exist yet)
+
+    ini["server"]["port"] = 8080;           // write (saved to the file immediately)
+    int port = ini["server"]["port"];       // read
+    std::cout << port << std::endl;
+}
+```
 
 ---
 
 ### Ⅰ、Project
 You can view the project at [https://github.com/dujingning/inicpp.git](https://github.com/dujingning/inicpp.git) or [https://gitee.com/dujingning/inicpp](https://gitee.com/dujingning/inicpp).
 
-#### * To support open source, please give us a star. For any issues, feel free to open an issue. Thank you very much!
-
+If inicpp helps you, a ⭐ star is much appreciated. Issues and pull requests are always welcome!
 
 ---
 
@@ -31,22 +61,6 @@ The INI header-only library for Modern C++ supports **reading**, **writing**, an
 - **Read / write / comment**: write values and comments back to the file, keeping existing comments and line endings.
 - **Safe writes**: updates go through a backup-based replacement; deferred writes via `flush()` let you batch changes and handle failures.
 - **Predictable errors**: conversion operators throw `std::runtime_error`; `toString()` / `toInt()` / `toDouble()` never throw.
-
-#### Quick start
-
-```cpp
-#include "inicpp.hpp"
-#include <iostream>
-
-int main()
-{
-    inicpp::IniManager ini("config.ini");   // load and parse (the file may not exist yet)
-
-    ini["server"]["port"] = 8080;           // write (saved to the file immediately)
-    int port = ini["server"]["port"];       // read
-    std::cout << port << std::endl;
-}
-```
 
 #### API cheat sheet
 
