@@ -1,3 +1,5 @@
+[English](README.md) | **简体中文**
+
 ### 这个 C++ 库用于什么？
 
 > 1. 让 INI 文件处理保持**简单**、**方便**、**直观**。
@@ -25,6 +27,42 @@ inicpp 是一个面向 Modern C++ 的 INI 单头文件库，支持**读取**、*
 
 - 新特性：[将配置轻松绑定到业务数据结构（读取）](#7将配置轻松绑定到业务数据结构读取)。
 
+#### 特性
+
+- **单头文件**：把 `inicpp.hpp` 拷进项目即可，C++11 及以上，无第三方依赖。
+- **访问直观**：`_ini["server"]["port"]` 像 map 一样读写，并自动完成类型转换。
+- **读 / 写 / 注释**：可将值和注释写回文件，并保留已有注释和换行风格。
+- **写入安全**：更新通过 backup 替换流程完成；延迟写入可批量修改，并由调用者处理写入失败。
+- **错误行为明确**：转换操作抛出 `std::runtime_error`；`toString()` / `toInt()` / `toDouble()` 永不抛异常。
+
+#### 快速开始
+
+```cpp
+#include "inicpp.hpp"
+#include <iostream>
+
+int main()
+{
+    inicpp::IniManager ini("config.ini");   // 加载并解析（文件可以暂不存在）
+
+    ini["server"]["port"] = 8080;           // 写入（立即保存到文件）
+    int port = ini["server"]["port"];       // 读取
+    std::cout << port << std::endl;
+}
+```
+
+#### API 速查
+
+| 任务 | API |
+| --- | --- |
+| 读取（缺失 / 转换失败时抛异常） | `int v = ini["sec"]["key"];`、`ini["sec"]["key"].get<T>()` |
+| 读取（不抛异常） | `ini["sec"].toString("key")`、`.toInt("key")`、`.toDouble("key")` |
+| 写入 | `ini["sec"]["key"] = v;`、`ini.set("sec", "key", v[, "comment"])` |
+| 注释 | `ini.setComment("sec", "key", "text")` |
+| 查询 | `ini.sectionsList()`、`ini.sectionMap("sec")`、`ini["sec"].isKeyExists("key")`、`ini.isSectionExists("sec")` |
+| 延迟写入 | `ini.setAutoFlush(false)`、`ini.isDirty()`、`ini.flush()` |
+| 重新加载 | `ini.parse()`（丢弃尚未 flush 的修改） |
+
 #### 支持的 INI 语法
 
 读取 INI 文件时，inicpp 支持以下常见形式：
@@ -44,13 +82,13 @@ inicpp 是一个面向 Modern C++ 的 INI 单头文件库，支持**读取**、*
 
 ### Ⅲ、用法
 
-#### * 0. 使用 C++11 或更高版本。
+#### 0. 安装
 
 ```bash
 git clone https://github.com/dujingning/inicpp.git
 ```
 
-包含 `inicpp.hpp`，声明 `inicpp::IniManager` 对象即可使用。
+将 `inicpp.hpp` 拷贝到你的项目（或把本仓库加入 include 路径），包含头文件并声明 `inicpp::IniManager` 即可使用。需要 C++11 或更高版本（`-std=c++11`）。
 
 #### 1. 写入示例
 
@@ -211,14 +249,17 @@ int main()
 
 #### 6. `std::wstring`
 
+`std::wstring` 支持是可选的，因为并非所有 C++11 标准库都提供 `<codecvt>`。在包含头文件之前定义 `_ENABLE_INICPP_STD_WSTRING_` 即可启用（旧的拼写错误宏 `_ENBABLE_INICPP_STD_WSTRING_` 仍然兼容）。
+
 ```cpp
-#ifndef _ENBABLE_INICPP_STD_WSTRING_
-#define _ENBABLE_INICPP_STD_WSTRING_ // std::wstring support
+#ifndef _ENABLE_INICPP_STD_WSTRING_
+#define _ENABLE_INICPP_STD_WSTRING_ // std::wstring support
 #endif
 
 #include "inicpp.hpp"
 
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
 
 int main()
 {
@@ -316,20 +357,14 @@ int main()
 
 #### 8. 如何使用 `example/main.cpp`
 
-可以通过 `example/Makefile` 编译，也可以使用你习惯的其他方式。
-
-如果无法使用 make，可以执行：
-
-```bash
-g++ -I../ -std=c++11 main.cpp -o iniExample
-```
+可以通过 `example/Makefile` 编译；不使用 make 时执行 `g++ -I../ -std=c++11 main.cpp -o iniExample`。
 
 - 编译 `example/main.cpp`
 
 ```bash
+jn@jn:~/inicpp$ cd example/
 jn@jn:~/inicpp/example$ ls
-example  inicpp.hpp  LICENSE  README.md
-jn@jn:~/inicpp/example$ cd example/
+main.cpp  Makefile
 jn@jn:~/inicpp/example$ make
 g++ -I../ -std=c++11 main.cpp -o iniExample
 jn@jn:~/inicpp/example$ ls
@@ -381,7 +416,20 @@ jn@jn:~/inicpp/example$
 
 ---
 
-### Ⅳ、Star History
+### Ⅳ、测试
+
+测试位于 `tests/`，使用严格的 C++11 参数（`-Wall -Wextra -pedantic`）编译。测试集同时会检查 `example/main.cpp` 能否编译，以及错误用法是否会在编译期被拒绝。
+
+```bash
+cd tests
+make test
+```
+
+贡献代码前请先阅读 [`tests/Dev_Rules_en.md`](tests/Dev_Rules_en.md)。
+
+---
+
+### Ⅴ、Star History
 
 <a href="https://star-history.com/#dujingning/inicpp">
  <picture>
@@ -393,6 +441,6 @@ jn@jn:~/inicpp/example$
 
 ---
 
-### Ⅴ、结束
+### Ⅵ、许可证
 
-本项目由 **DuJingning** 创建。
+基于 [MIT License](LICENSE) 发布。本项目由 **DuJingning** 创建。

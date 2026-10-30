@@ -1,3 +1,5 @@
+**English** | [简体中文](README_CN.md)
+
 ### What is this C++ library for?
 
 > 🔥 1.Aims to make INI file processing **simple**, **convenient**, and **intuitive**.
@@ -22,6 +24,42 @@ The INI header-only library for Modern C++ supports **reading**, **writing**, an
 
 - New Feature : [Super Easy Binding to Your Data Structures (For Read)](#7super-easy-binding-to-your-data-structures-read).
 
+#### Features
+
+- **Single header**: copy `inicpp.hpp` into your project. C++11 or later, no third-party dependencies.
+- **Intuitive access**: `_ini["server"]["port"]` reads and assigns like a map, with automatic type conversion.
+- **Read / write / comment**: write values and comments back to the file, keeping existing comments and line endings.
+- **Safe writes**: updates go through a backup-based replacement; deferred writes via `flush()` let you batch changes and handle failures.
+- **Predictable errors**: conversion operators throw `std::runtime_error`; `toString()` / `toInt()` / `toDouble()` never throw.
+
+#### Quick start
+
+```cpp
+#include "inicpp.hpp"
+#include <iostream>
+
+int main()
+{
+    inicpp::IniManager ini("config.ini");   // load and parse (the file may not exist yet)
+
+    ini["server"]["port"] = 8080;           // write (saved to the file immediately)
+    int port = ini["server"]["port"];       // read
+    std::cout << port << std::endl;
+}
+```
+
+#### API cheat sheet
+
+| Task | API |
+| --- | --- |
+| Read (throws if missing / invalid) | `int v = ini["sec"]["key"];`, `ini["sec"]["key"].get<T>()` |
+| Read (never throws) | `ini["sec"].toString("key")`, `.toInt("key")`, `.toDouble("key")` |
+| Write | `ini["sec"]["key"] = v;`, `ini.set("sec", "key", v[, "comment"])` |
+| Comment | `ini.setComment("sec", "key", "text")` |
+| Query | `ini.sectionsList()`, `ini.sectionMap("sec")`, `ini["sec"].isKeyExists("key")`, `ini.isSectionExists("sec")` |
+| Deferred write | `ini.setAutoFlush(false)`, `ini.isDirty()`, `ini.flush()` |
+| Reload | `ini.parse()` (discards unflushed changes) |
+
 #### Supported INI syntax
 
 When reading INI files, inicpp supports these common forms:
@@ -42,12 +80,12 @@ Quoted values are returned as written; inicpp does not automatically remove quot
 
 ### Ⅲ、Usage 
 
-#### * 0.Simple to use with C++11 or later.
-```
+#### 0.Installation
+```bash
 git clone https://github.com/dujingning/inicpp.git
 ```
 
-Include `inicpp.hpp`, declare the `inicpp::IniManager` class, and you're all set.
+Copy `inicpp.hpp` into your project (or add the repository to your include path), include it, and declare `inicpp::IniManager`. Requires C++11 or later (`-std=c++11`).
 
 
 #### 1.write example
@@ -200,14 +238,16 @@ int main()
 ```
 
 #### 6.std::wstring
+`std::wstring` support is optional because not every C++11 standard library ships `<codecvt>`. Define `_ENABLE_INICPP_STD_WSTRING_` before including the header to enable it (the legacy misspelled `_ENBABLE_INICPP_STD_WSTRING_` is still accepted).
 ```cpp
-#ifndef _ENBABLE_INICPP_STD_WSTRING_
-#define _ENBABLE_INICPP_STD_WSTRING_ // std::wstring support
+#ifndef _ENABLE_INICPP_STD_WSTRING_
+#define _ENABLE_INICPP_STD_WSTRING_ // std::wstring support
 #endif
 
 #include "inicpp.hpp"
 
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
 
 int main()
 {
@@ -303,15 +343,13 @@ int main()
 
 
 #### 8.how to use example/main.cpp
-You can compile it using `example/Makefile` or any other method you prefer.
-
-If make is not available, use the following command: `g++ -I../ -std=c++11 main.cpp -o iniExample`.
+Compile it with `example/Makefile`, or without make: `g++ -I../ -std=c++11 main.cpp -o iniExample`.
 
 - Compile `example/main.cpp`
 ```bash
+jn@jn:~/inicpp$ cd example/
 jn@jn:~/inicpp/example$ ls
-example  inicpp.hpp  LICENSE  README.md
-jn@jn:~/inicpp/example$ cd example/
+main.cpp  Makefile
 jn@jn:~/inicpp/example$ make
 g++ -I../ -std=c++11 main.cpp -o iniExample
 jn@jn:~/inicpp/example$ ls
@@ -361,7 +399,17 @@ jn@jn:~/inicpp/example$
 
 ---
 
-### Ⅳ、Star History
+### Ⅳ、Testing
+The tests live in `tests/` and build with strict C++11 flags (`-Wall -Wextra -pedantic`). The suite also checks that `example/main.cpp` compiles and that invalid usage is rejected at compile time.
+```bash
+cd tests
+make test
+```
+Please read [`tests/Dev_Rules_en.md`](tests/Dev_Rules_en.md) before contributing.
+
+---
+
+### Ⅴ、Star History
 <a href="https://star-history.com/#dujingning/inicpp">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=dujingning/inicpp&type=Date&theme=dark" />
@@ -373,5 +421,5 @@ jn@jn:~/inicpp/example$
 ---
 
 
-### Ⅴ、End
- The project was created by **DuJingning**.
+### Ⅵ、License
+Released under the [MIT License](LICENSE). The project was created by **DuJingning**.
