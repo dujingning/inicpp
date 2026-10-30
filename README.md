@@ -5,13 +5,13 @@
 **Simple, convenient and intuitive INI file handling for Modern C++**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![C++11](https://img.shields.io/badge/C%2B%2B-11%20or%20later-00599C.svg?logo=c%2B%2B&logoColor=white)](#0installation)
+[![C++11](https://img.shields.io/badge/C%2B%2B-11%20or%20later-00599C.svg?logo=c%2B%2B&logoColor=white)](#installation)
 [![Header only](https://img.shields.io/badge/header--only-1%20file-success.svg)](inicpp.hpp)
 [![GitHub stars](https://img.shields.io/github/stars/dujingning/inicpp?style=flat&logo=github)](https://github.com/dujingning/inicpp/stargazers)
 
 **English** | [简体中文](README_CN.md)
 
-[Quick start](#quick-start) · [Usage](#ⅲusage) · [Syntax](#supported-ini-syntax) · [Testing](#ⅳtesting) · [Gitee mirror](https://gitee.com/dujingning/inicpp)
+[Quick start](#quick-start) · [Install](#installation) · [Usage](#usage) · [Error handling](#error-handling) · [Syntax](#supported-ini-syntax) · [Testing](#testing)
 
 </div>
 
@@ -21,7 +21,7 @@
 
 ---
 
-### Quick start
+## Quick start
 
 Drop `inicpp.hpp` into your project and you are done:
 
@@ -41,28 +41,42 @@ int main()
 
 ---
 
-### Ⅰ、Project
-You can view the project at [https://github.com/dujingning/inicpp.git](https://github.com/dujingning/inicpp.git) or [https://gitee.com/dujingning/inicpp](https://gitee.com/dujingning/inicpp).
-
-If inicpp helps you, a ⭐ star is much appreciated. Issues and pull requests are always welcome!
-
----
-
-### Ⅱ、Description
-
-The INI header-only library for Modern C++ supports **reading**, **writing**, and even **commenting**. It is easy to use and simplifies working with INI files.
-
-- New Feature : [Super Easy Binding to Your Data Structures (For Read)](#7super-easy-binding-to-your-data-structures-read).
-
-#### Features
+## Features
 
 - **Single header**: copy `inicpp.hpp` into your project. C++11 or later, no third-party dependencies.
 - **Intuitive access**: `_ini["server"]["port"]` reads and assigns like a map, with automatic type conversion.
 - **Read / write / comment**: write values and comments back to the file, keeping existing comments and line endings.
 - **Safe writes**: updates go through a backup-based replacement; deferred writes via `flush()` let you batch changes and handle failures.
-- **Predictable errors**: conversion operators throw `std::runtime_error`; `toString()` / `toInt()` / `toDouble()` never throw.
+- **Predictable errors**: conversion operators throw `std::runtime_error`; `toString()` / `toInt()` / `toDouble()` never throw. See [Error handling](#error-handling).
+- **New**: [bind a config straight into your own structs](#bind-to-your-own-struct-read).
 
-#### API cheat sheet
+---
+
+## Installation
+
+```bash
+git clone https://github.com/dujingning/inicpp.git
+```
+
+Copy `inicpp.hpp` into your project, or add the repository directory to your include path. C++11 or later is required:
+
+```bash
+g++ -std=c++11 -I/path/to/inicpp main.cpp -o app
+```
+
+With CMake, declare the header as an interface library:
+
+```cmake
+add_library(inicpp INTERFACE)
+target_include_directories(inicpp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/inicpp)
+target_compile_features(inicpp INTERFACE cxx_std_11)
+
+target_link_libraries(my_app PRIVATE inicpp)
+```
+
+---
+
+## API cheat sheet
 
 | Task | API |
 | --- | --- |
@@ -74,36 +88,39 @@ The INI header-only library for Modern C++ supports **reading**, **writing**, an
 | Deferred write | `ini.setAutoFlush(false)`, `ini.isDirty()`, `ini.flush()` |
 | Reload | `ini.parse()` (discards unflushed changes) |
 
-#### Supported INI syntax
-
-When reading INI files, inicpp supports these common forms:
-
-- UTF-8 BOM at the beginning of the file.
-- Section headers such as `[server]`, `  [server]`, and `[ server ]`.
-- Key-value lines using `=` or `:`, such as `port=8080` and `host: localhost`.
-- Empty values in existing files and values written with `set(..., "")`, such as `key=`.
-- Full-line comments using `;` or `#`, including lines with leading whitespace.
-- Inline comments after whitespace, such as `key=value ; comment` and `key=value # comment`.
-- Comment markers inside quoted or escaped values are preserved, such as `text="a ; b"` and `path=C:\tmp;cache`.
-- Duplicate keys in the same section, and duplicate section headers, use the last parsed value for the repeated key.
-
-Quoted values are returned as written; inicpp does not automatically remove quotes or unescape values. Write operations preserve the existing LF or CRLF line-ending style, but multiline values, bare keys without `=` or `:`, and full formatting-preserving round trips are not supported.
-
-
 ---
 
-### Ⅲ、Usage 
+## Usage
 
-#### 0.Installation
-```bash
-git clone https://github.com/dujingning/inicpp.git
+Every example below is self-contained: include `inicpp.hpp`, create an `inicpp::IniManager`, and go.
+
+### Read values
+
+Convert: From string to typed values. `operator[]` value conversions, including `std::string`, `bool`, and `get<T>()`, throw `std::runtime_error` when the section/key is missing or conversion fails. Existing empty values are valid and convert to an empty `std::string`; use `toString()`, `toInt()`, and `toDouble()` for non-throwing default-value reads. `bool` conversion treats only `"0"`, `"false"`, and `"no"` as false.
+
+```cpp
+#include "inicpp.hpp"
+#include <iostream>
+
+int main()
+{
+    inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
+
+    int         port = _ini["server"]["port"];
+    std::string ip   = _ini["server"]["ip"];
+    std::cout << ip << ":"<< port << std::endl;
+
+    // or get any
+    ip   = _ini["server"]["ip"].get<std::string>();
+    port = _ini["server"]["port"].get<int>();
+    std::cout << ip << ":"<< port << std::endl;
+}
 ```
 
-Copy `inicpp.hpp` into your project (or add the repository to your include path), include it, and declare `inicpp::IniManager`. Requires C++11 or later (`-std=c++11`).
+### Write values
 
-
-#### 1.write example
 Write: Set directly to the file.
+
 ```cpp
 #include "inicpp.hpp"
 #include <iostream>
@@ -123,8 +140,10 @@ int main()
 }
 ```
 
-#### 1.1.deferred write example
+### Deferred writes
+
 By default, `set()` and `operator[]` assignment write to the file immediately. If you need to update many values, disable auto flush, update values in memory, and call `flush()` once.
+
 ```cpp
 #include "inicpp.hpp"
 #include <iostream>
@@ -152,31 +171,10 @@ int main()
 
 `flush()` writes all pending changes to disk through the same backup-based replacement path as immediate writes. The destructor does not call `flush()`, so callers can handle write failures explicitly. Calling `parse()` discards unflushed changes and reloads the file. Calling `setAutoFlush(true)` while changes are pending first attempts to `flush()` them; it returns `false` if that write fails.
 
+### Comments
 
-#### 2.read example
-Convert: From string to typed values. `operator[]` value conversions, including `std::string`, `bool`, and `get<T>()`, throw `std::runtime_error` when the section/key is missing or conversion fails. Existing empty values are valid and convert to an empty `std::string`; use `toString()`, `toInt()`, and `toDouble()` for non-throwing default-value reads. `bool` conversion treats only `"0"`, `"false"`, and `"no"` as false.
-```cpp
-#include "inicpp.hpp"
-#include <iostream>
-
-int main()
-{
-    inicpp::IniManager _ini("config.ini"); // Load and parse the INI file.
-
-    int         port = _ini["server"]["port"];
-    std::string ip   = _ini["server"]["ip"];
-    std::cout << ip << ":"<< port << std::endl;
-
-    // or get any
-    ip   = _ini["server"]["ip"].get<std::string>();
-    port = _ini["server"]["port"].get<int>();
-    std::cout << ip << ":"<< port << std::endl;
-}
-```
-
-
-#### 3.comment example
 Comment: Write comments for key-value pairs.
+
 ```cpp
 #include "inicpp.hpp"
 #include <iostream>
@@ -193,9 +191,10 @@ int main()
 
 Comments written through `set()` or `setComment()` are prefixed with `;` by default. If the comment string already starts with `;` or `#`, that marker is kept.
 
+### Non-throwing reads: `toString()`, `toInt()`, `toDouble()`
 
-#### 4.toString()、toInt()、toDouble()
 Convert: From string to type without throwing. `toString()` returns an empty string for missing keys, while `toInt()` and `toDouble()` return `0` or `0.0` when the key is missing or conversion fails.
+
 ```cpp
 #include "inicpp.hpp"
 #include <iostream>
@@ -221,9 +220,10 @@ int main()
 }
 ```
 
+### Enumerate: `isKeyExists()`, `sectionsList()`, `sectionMap()`
 
-#### 5.isKeyExists()、sectionsList()、sectionMap()
 May contain unnamed sections: when keys are at the head of the file.
+
 ```cpp
 #include "inicpp.hpp"
 #include <iostream>
@@ -251,8 +251,10 @@ int main()
 }
 ```
 
-#### 6.std::wstring
+### `std::wstring`
+
 `std::wstring` support is optional because not every C++11 standard library ships `<codecvt>`. Define `_ENABLE_INICPP_STD_WSTRING_` before including the header to enable it (the legacy misspelled `_ENBABLE_INICPP_STD_WSTRING_` is still accepted).
+
 ```cpp
 #ifndef _ENABLE_INICPP_STD_WSTRING_
 #define _ENABLE_INICPP_STD_WSTRING_ // std::wstring support
@@ -287,8 +289,7 @@ int main()
 }
 ```
 
-
-#### 7.Super Easy Binding to Your Data Structures (Read).
+### Bind to your own struct (read)
 
 config.ini :
 ```
@@ -305,6 +306,7 @@ ip=127.0.0.1
 PI=3.141592653589793238462643383279502884
 ```
 config.cpp
+
 ```cpp
 #include "inicpp.hpp"
 #include <iostream>
@@ -355,24 +357,88 @@ int main()
 }
 ```
 
+---
 
-#### 8.how to use example/main.cpp
+## Error handling
+
+| Operation | When something goes wrong |
+| --- | --- |
+| `ini["sec"]["key"]` converted to `int`, `std::string`, `bool`, ..., `get<T>()`, `<<` | Throws `std::runtime_error` (missing key, or the value cannot be converted) |
+| `toString()`, `toInt()`, `toDouble()` | Never throws; returns `""`, `0` or `0.0` |
+| `set()`, `setComment()`, `flush()`, `setAutoFlush(true)` | Returns `false` when the file cannot be written |
+| `ini["sec"]["key"] = value` | Cannot report a write failure. Use `set()` when you need to detect one |
+
+```cpp
+#include "inicpp.hpp"
+#include <iostream>
+#include <stdexcept>
+
+int main()
+{
+    inicpp::IniManager ini("config.ini");
+
+    try
+    {
+        int port = ini["server"]["port"]; // throws if the key is missing or not a number
+        std::cout << port << std::endl;
+    }
+    catch (const std::runtime_error &e)
+    {
+        std::cerr << "read failed: " << e.what() << std::endl;
+    }
+
+    int timeout = ini["server"].toInt("timeout"); // missing key -> 0, never throws
+    std::cout << "timeout = " << timeout << std::endl;
+
+    if (!ini.set("server", "ip", "127.0.0.1")) // set() reports write failures
+    {
+        std::cerr << "failed to write config.ini" << std::endl;
+        return 1;
+    }
+}
+```
+
+Thread safety: `IniManager` does no internal locking. Guard an instance with your own mutex if several threads share it.
+
+---
+
+## Supported INI syntax
+
+When reading INI files, inicpp supports these common forms:
+
+- UTF-8 BOM at the beginning of the file.
+- Section headers such as `[server]`, `  [server]`, and `[ server ]`.
+- Key-value lines using `=` or `:`, such as `port=8080` and `host: localhost`.
+- Empty values in existing files and values written with `set(..., "")`, such as `key=`.
+- Full-line comments using `;` or `#`, including lines with leading whitespace.
+- Inline comments after whitespace, such as `key=value ; comment` and `key=value # comment`.
+- Comment markers inside quoted or escaped values are preserved, such as `text="a ; b"` and `path=C:\tmp;cache`.
+- Duplicate keys in the same section, and duplicate section headers, use the last parsed value for the repeated key.
+
+Quoted values are returned as written; inicpp does not automatically remove quotes or unescape values. Write operations preserve the existing LF or CRLF line-ending style, but multiline values, bare keys without `=` or `:`, and full formatting-preserving round trips are not supported.
+
+---
+
+## Running the example
+
 Compile it with `example/Makefile`, or without make: `g++ -I../ -std=c++11 main.cpp -o iniExample`.
 
 - Compile `example/main.cpp`
+
 ```bash
-jn@jn:~/inicpp$ cd example/
-jn@jn:~/inicpp/example$ ls
+$ cd example/
+$ ls
 main.cpp  Makefile
-jn@jn:~/inicpp/example$ make
+$ make
 g++ -I../ -std=c++11 main.cpp -o iniExample
-jn@jn:~/inicpp/example$ ls
+$ ls
 iniExample  main.cpp  Makefile
 ```
 
 - Run example app `iniExample`
+
 ```bash
-jn@jn:~/inicpp/example$ ./iniExample
+$ ./iniExample
 
 Section:
 title      -------> config.ini
@@ -386,14 +452,15 @@ ip         -------> 127.0.0.1
 keepalived -------> true
 number     -------> 1
 port       -------> 8080
-jn@jn:~/inicpp/example$
+$
 ```
 
 - Configuration file `config.ini` has been created.
+
 ```bash
-jn@jn:~/inicpp/example$ ls
+$ ls
 config.ini  iniExample  main.cpp  Makefile
-jn@jn:~/inicpp/example$ cat config.ini
+$ cat config.ini
 ;This is the title.
 title=config.ini
 [server]
@@ -408,22 +475,31 @@ ip=127.0.0.1
 [math]
 ;Comment: This is pi in mathematics.
 PI=3.141592653589793238462643383279502884
-jn@jn:~/inicpp/example$
+$
 ```
 
 ---
 
-### Ⅳ、Testing
-The tests live in `tests/` and build with strict C++11 flags (`-Wall -Wextra -pedantic`). The suite also checks that `example/main.cpp` compiles and that invalid usage is rejected at compile time.
+## Testing
+
+The tests live in `tests/` and are built with `g++ -std=c++11 -Wall -Wextra -pedantic`. The suite also checks that `example/main.cpp` compiles and that invalid usage is rejected at compile time.
+
 ```bash
 cd tests
 make test
 ```
-Please read [`tests/Dev_Rules_en.md`](tests/Dev_Rules_en.md) before contributing.
+
+Contributing: please read the [development rules](tests/Dev_Rules_en.md) (English) first. Issues and pull requests are welcome.
 
 ---
 
-### Ⅴ、Star History
+## Project
+
+- GitHub: [dujingning/inicpp](https://github.com/dujingning/inicpp)
+- Gitee: [dujingning/inicpp](https://gitee.com/dujingning/inicpp)
+
+If inicpp helps you, a ⭐ star is much appreciated. Created by **DuJingning**.
+
 <a href="https://star-history.com/#dujingning/inicpp">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=dujingning/inicpp&type=Date&theme=dark" />
@@ -434,6 +510,6 @@ Please read [`tests/Dev_Rules_en.md`](tests/Dev_Rules_en.md) before contributing
 
 ---
 
+## License
 
-### Ⅵ、License
-Released under the [MIT License](LICENSE). The project was created by **DuJingning**.
+Released under the [MIT License](LICENSE).

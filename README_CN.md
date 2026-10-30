@@ -5,13 +5,13 @@
 **面向 Modern C++ 的 INI 文件处理库：简单、方便、直观**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![C++11](https://img.shields.io/badge/C%2B%2B-11%20or%20later-00599C.svg?logo=c%2B%2B&logoColor=white)](#0-安装)
+[![C++11](https://img.shields.io/badge/C%2B%2B-11%20or%20later-00599C.svg?logo=c%2B%2B&logoColor=white)](#安装)
 [![Header only](https://img.shields.io/badge/header--only-1%20file-success.svg)](inicpp.hpp)
 [![GitHub stars](https://img.shields.io/github/stars/dujingning/inicpp?style=flat&logo=github)](https://github.com/dujingning/inicpp/stargazers)
 
 [English](README.md) | **简体中文**
 
-[快速开始](#快速开始) · [用法](#ⅲ用法) · [语法](#支持的-ini-语法) · [测试](#ⅳ测试) · [Gitee 镜像](https://gitee.com/dujingning/inicpp)
+[快速开始](#快速开始) · [安装](#安装) · [用法](#用法) · [错误处理](#错误处理) · [语法](#支持的-ini-语法) · [测试](#测试)
 
 </div>
 
@@ -21,7 +21,7 @@
 
 ---
 
-### 快速开始
+## 快速开始
 
 把 `inicpp.hpp` 放进项目即可使用：
 
@@ -41,32 +41,42 @@ int main()
 
 ---
 
-### Ⅰ、项目
-
-项目地址：
-
-- GitHub: [https://github.com/dujingning/inicpp.git](https://github.com/dujingning/inicpp.git)
-- Gitee: [https://gitee.com/dujingning/inicpp](https://gitee.com/dujingning/inicpp)
-
-如果这个项目对你有帮助，欢迎点一个 ⭐ star。遇到问题也欢迎提交 issue 或 PR。
-
----
-
-### Ⅱ、说明
-
-inicpp 是一个面向 Modern C++ 的 INI 单头文件库，支持**读取**、**写入**和**注释写入**。它使用简单，可以降低 C++ 项目处理 INI 配置文件的成本。
-
-- 新特性：[将配置轻松绑定到业务数据结构（读取）](#7将配置轻松绑定到业务数据结构读取)。
-
-#### 特性
+## 特性
 
 - **单头文件**：把 `inicpp.hpp` 拷进项目即可，C++11 及以上，无第三方依赖。
 - **访问直观**：`_ini["server"]["port"]` 像 map 一样读写，并自动完成类型转换。
 - **读 / 写 / 注释**：可将值和注释写回文件，并保留已有注释和换行风格。
 - **写入安全**：更新通过 backup 替换流程完成；延迟写入可批量修改，并由调用者处理写入失败。
-- **错误行为明确**：转换操作抛出 `std::runtime_error`；`toString()` / `toInt()` / `toDouble()` 永不抛异常。
+- **错误行为明确**：转换操作抛出 `std::runtime_error`；`toString()` / `toInt()` / `toDouble()` 永不抛异常。详见[错误处理](#错误处理)。
+- **新特性**：[将配置直接绑定到业务数据结构](#绑定到业务数据结构读取)。
 
-#### API 速查
+---
+
+## 安装
+
+```bash
+git clone https://github.com/dujingning/inicpp.git
+```
+
+将 `inicpp.hpp` 拷贝到你的项目，或把本仓库目录加入 include 路径。需要 C++11 或更高版本：
+
+```bash
+g++ -std=c++11 -I/path/to/inicpp main.cpp -o app
+```
+
+使用 CMake 时，可把头文件声明为 interface 库：
+
+```cmake
+add_library(inicpp INTERFACE)
+target_include_directories(inicpp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/inicpp)
+target_compile_features(inicpp INTERFACE cxx_std_11)
+
+target_link_libraries(my_app PRIVATE inicpp)
+```
+
+---
+
+## API 速查
 
 | 任务 | API |
 | --- | --- |
@@ -78,34 +88,36 @@ inicpp 是一个面向 Modern C++ 的 INI 单头文件库，支持**读取**、*
 | 延迟写入 | `ini.setAutoFlush(false)`、`ini.isDirty()`、`ini.flush()` |
 | 重新加载 | `ini.parse()`（丢弃尚未 flush 的修改） |
 
-#### 支持的 INI 语法
-
-读取 INI 文件时，inicpp 支持以下常见形式：
-
-- 文件开头的 UTF-8 BOM。
-- section 头，例如 `[server]`、`  [server]`、`[ server ]`。
-- 使用 `=` 或 `:` 的 key-value 行，例如 `port=8080` 和 `host: localhost`。
-- 文件中已有的空值，以及通过 `set(..., "")` 写入的空值，例如 `key=`。
-- 使用 `;` 或 `#` 的整行注释，包括前面带空白字符的注释行。
-- 位于空白字符之后的行内注释，例如 `key=value ; comment` 和 `key=value # comment`。
-- 位于引号或转义值中的注释标记会被保留，例如 `text="a ; b"` 和 `path=C:\tmp;cache`。
-- 同一个 section 中的重复 key，以及重复 section 头，都会使用最后一次解析到的重复 key 值。
-
-带引号的值会按原样返回；inicpp 不会自动去除引号，也不会自动反转义。写入操作会保留已有文件的 LF 或 CRLF 换行风格，但不支持多行值、不带 `=` 或 `:` 的裸 key，也不保证完整保留原始格式进行 round trip。
-
 ---
 
-### Ⅲ、用法
+## 用法
 
-#### 0. 安装
+下面每个示例都是完整的：包含 `inicpp.hpp`，创建 `inicpp::IniManager` 即可使用。
 
-```bash
-git clone https://github.com/dujingning/inicpp.git
+### 读取
+
+转换：将字符串转换为目标类型。`operator[]` 的值转换，包括 `std::string`、`bool` 和 `get<T>()`，在 section/key 不存在或类型转换失败时会抛出 `std::runtime_error`。文件中已有的空值是合法值，转换为 `std::string` 时会得到空字符串；如果需要不抛异常的默认值读取，可以使用 `toString()`、`toInt()` 和 `toDouble()`。`bool` 转换只会把 `"0"`、`"false"` 和 `"no"` 视为 false。
+
+```cpp
+#include "inicpp.hpp"
+#include <iostream>
+
+int main()
+{
+    inicpp::IniManager _ini("config.ini"); // 加载并解析 INI 文件。
+
+    int         port = _ini["server"]["port"];
+    std::string ip   = _ini["server"]["ip"];
+    std::cout << ip << ":"<< port << std::endl;
+
+    // 或使用 get 获取
+    ip   = _ini["server"]["ip"].get<std::string>();
+    port = _ini["server"]["port"].get<int>();
+    std::cout << ip << ":"<< port << std::endl;
+}
 ```
 
-将 `inicpp.hpp` 拷贝到你的项目（或把本仓库加入 include 路径），包含头文件并声明 `inicpp::IniManager` 即可使用。需要 C++11 或更高版本（`-std=c++11`）。
-
-#### 1. 写入示例
+### 写入
 
 写入：直接写入文件。
 
@@ -128,7 +140,7 @@ int main()
 }
 ```
 
-#### 1.1 延迟写入示例
+### 延迟写入
 
 默认情况下，`set()` 和 `operator[]` 赋值会立即写入文件。如果需要一次更新多个配置项，可以关闭自动 flush，先把修改保存在内存中，最后调用一次 `flush()` 写入文件。
 
@@ -159,30 +171,7 @@ int main()
 
 `flush()` 会通过与立即写入相同的 backup 替换流程，把所有 pending 修改写入磁盘。析构函数不会自动调用 `flush()`，这样调用者可以显式处理写入失败。调用 `parse()` 会丢弃尚未 `flush()` 的修改，并重新加载文件。存在 pending 修改时调用 `setAutoFlush(true)` 会先尝试 `flush()`；如果写入失败，则返回 `false`。
 
-#### 2. 读取示例
-
-转换：将字符串转换为目标类型。`operator[]` 的值转换，包括 `std::string`、`bool` 和 `get<T>()`，在 section/key 不存在或类型转换失败时会抛出 `std::runtime_error`。文件中已有的空值是合法值，转换为 `std::string` 时会得到空字符串；如果需要不抛异常的默认值读取，可以使用 `toString()`、`toInt()` 和 `toDouble()`。`bool` 转换只会把 `"0"`、`"false"` 和 `"no"` 视为 false。
-
-```cpp
-#include "inicpp.hpp"
-#include <iostream>
-
-int main()
-{
-    inicpp::IniManager _ini("config.ini"); // 加载并解析 INI 文件。
-
-    int         port = _ini["server"]["port"];
-    std::string ip   = _ini["server"]["ip"];
-    std::cout << ip << ":"<< port << std::endl;
-
-    // 或使用 get 获取
-    ip   = _ini["server"]["ip"].get<std::string>();
-    port = _ini["server"]["port"].get<int>();
-    std::cout << ip << ":"<< port << std::endl;
-}
-```
-
-#### 3. 注释示例
+### 注释
 
 注释：为 key-value 写入注释。
 
@@ -202,7 +191,7 @@ int main()
 
 通过 `set()` 或 `setComment()` 写入的注释默认会添加 `;` 前缀。如果传入的注释字符串已经以 `;` 或 `#` 开头，则会保留原有标记。
 
-#### 4. `toString()`、`toInt()`、`toDouble()`
+### 不抛异常的读取：`toString()`、`toInt()`、`toDouble()`
 
 转换：从字符串转换为目标类型，但不抛异常。key 不存在时，`toString()` 返回空字符串，`toInt()` 和 `toDouble()` 分别返回 `0` 或 `0.0`；转换失败时，`toInt()` 和 `toDouble()` 也返回默认值。
 
@@ -231,7 +220,7 @@ int main()
 }
 ```
 
-#### 5. `isKeyExists()`、`sectionsList()`、`sectionMap()`
+### 枚举：`isKeyExists()`、`sectionsList()`、`sectionMap()`
 
 支持无名 section：例如 key 位于文件头部时。
 
@@ -262,7 +251,7 @@ int main()
 }
 ```
 
-#### 6. `std::wstring`
+### `std::wstring`
 
 `std::wstring` 支持是可选的，因为并非所有 C++11 标准库都提供 `<codecvt>`。在包含头文件之前定义 `_ENABLE_INICPP_STD_WSTRING_` 即可启用（旧的拼写错误宏 `_ENBABLE_INICPP_STD_WSTRING_` 仍然兼容）。
 
@@ -300,7 +289,7 @@ int main()
 }
 ```
 
-#### 7. 将配置轻松绑定到业务数据结构（读取）
+### 绑定到业务数据结构（读取）
 
 config.ini:
 
@@ -370,26 +359,88 @@ int main()
 }
 ```
 
-#### 8. 如何使用 `example/main.cpp`
+---
+
+## 错误处理
+
+| 操作 | 出错时的行为 |
+| --- | --- |
+| `ini["sec"]["key"]` 转换为 `int`、`std::string`、`bool` 等，以及 `get<T>()`、`<<` | 抛出 `std::runtime_error`（key 不存在或值无法转换） |
+| `toString()`、`toInt()`、`toDouble()` | 永不抛异常，返回 `""`、`0` 或 `0.0` |
+| `set()`、`setComment()`、`flush()`、`setAutoFlush(true)` | 无法写入文件时返回 `false` |
+| `ini["sec"]["key"] = value` | 无法报告写入失败；需要检测失败时请使用 `set()` |
+
+```cpp
+#include "inicpp.hpp"
+#include <iostream>
+#include <stdexcept>
+
+int main()
+{
+    inicpp::IniManager ini("config.ini");
+
+    try
+    {
+        int port = ini["server"]["port"]; // key 不存在或不是数字时抛异常
+        std::cout << port << std::endl;
+    }
+    catch (const std::runtime_error &e)
+    {
+        std::cerr << "read failed: " << e.what() << std::endl;
+    }
+
+    int timeout = ini["server"].toInt("timeout"); // key 不存在时返回 0，不抛异常
+    std::cout << "timeout = " << timeout << std::endl;
+
+    if (!ini.set("server", "ip", "127.0.0.1")) // set() 会报告写入失败
+    {
+        std::cerr << "failed to write config.ini" << std::endl;
+        return 1;
+    }
+}
+```
+
+线程安全：`IniManager` 内部没有加锁。多个线程共享同一个实例时，请自行使用互斥锁保护。
+
+---
+
+## 支持的 INI 语法
+
+读取 INI 文件时，inicpp 支持以下常见形式：
+
+- 文件开头的 UTF-8 BOM。
+- section 头，例如 `[server]`、`  [server]`、`[ server ]`。
+- 使用 `=` 或 `:` 的 key-value 行，例如 `port=8080` 和 `host: localhost`。
+- 文件中已有的空值，以及通过 `set(..., "")` 写入的空值，例如 `key=`。
+- 使用 `;` 或 `#` 的整行注释，包括前面带空白字符的注释行。
+- 位于空白字符之后的行内注释，例如 `key=value ; comment` 和 `key=value # comment`。
+- 位于引号或转义值中的注释标记会被保留，例如 `text="a ; b"` 和 `path=C:\tmp;cache`。
+- 同一个 section 中的重复 key，以及重复 section 头，都会使用最后一次解析到的重复 key 值。
+
+带引号的值会按原样返回；inicpp 不会自动去除引号，也不会自动反转义。写入操作会保留已有文件的 LF 或 CRLF 换行风格，但不支持多行值、不带 `=` 或 `:` 的裸 key，也不保证完整保留原始格式进行 round trip。
+
+---
+
+## 运行示例
 
 可以通过 `example/Makefile` 编译；不使用 make 时执行 `g++ -I../ -std=c++11 main.cpp -o iniExample`。
 
 - 编译 `example/main.cpp`
 
 ```bash
-jn@jn:~/inicpp$ cd example/
-jn@jn:~/inicpp/example$ ls
+$ cd example/
+$ ls
 main.cpp  Makefile
-jn@jn:~/inicpp/example$ make
+$ make
 g++ -I../ -std=c++11 main.cpp -o iniExample
-jn@jn:~/inicpp/example$ ls
+$ ls
 iniExample  main.cpp  Makefile
 ```
 
 - 运行示例程序 `iniExample`
 
 ```bash
-jn@jn:~/inicpp/example$ ./iniExample
+$ ./iniExample
 
 Section:
 title      -------> config.ini
@@ -403,15 +454,15 @@ ip         -------> 127.0.0.1
 keepalived -------> true
 number     -------> 1
 port       -------> 8080
-jn@jn:~/inicpp/example$
+$
 ```
 
 - 生成的配置文件 `config.ini`
 
 ```bash
-jn@jn:~/inicpp/example$ ls
+$ ls
 config.ini  iniExample  main.cpp  Makefile
-jn@jn:~/inicpp/example$ cat config.ini
+$ cat config.ini
 ;This is the title.
 title=config.ini
 [server]
@@ -426,25 +477,30 @@ ip=127.0.0.1
 [math]
 ;Comment: This is pi in mathematics.
 PI=3.141592653589793238462643383279502884
-jn@jn:~/inicpp/example$
+$
 ```
 
 ---
 
-### Ⅳ、测试
+## 测试
 
-测试位于 `tests/`，使用严格的 C++11 参数（`-Wall -Wextra -pedantic`）编译。测试集同时会检查 `example/main.cpp` 能否编译，以及错误用法是否会在编译期被拒绝。
+测试位于 `tests/`，使用 `g++ -std=c++11 -Wall -Wextra -pedantic` 编译。测试集同时会检查 `example/main.cpp` 能否编译，以及错误用法是否会在编译期被拒绝。
 
 ```bash
 cd tests
 make test
 ```
 
-贡献代码前请先阅读 [`tests/Dev_Rules_en.md`](tests/Dev_Rules_en.md)。
+参与贡献前请先阅读[开发规则](tests/Dev_Rules_en.md)（英文）。欢迎提交 issue 和 PR。
 
 ---
 
-### Ⅴ、Star History
+## 项目
+
+- GitHub: [dujingning/inicpp](https://github.com/dujingning/inicpp)
+- Gitee: [dujingning/inicpp](https://gitee.com/dujingning/inicpp)
+
+如果这个项目对你有帮助，欢迎点一个 ⭐ star。本项目由 **DuJingning** 创建。
 
 <a href="https://star-history.com/#dujingning/inicpp">
  <picture>
@@ -456,6 +512,6 @@ make test
 
 ---
 
-### Ⅵ、许可证
+## 许可证
 
-基于 [MIT License](LICENSE) 发布。本项目由 **DuJingning** 创建。
+基于 [MIT License](LICENSE) 发布。
